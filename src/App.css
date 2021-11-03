@@ -1,6 +1,5 @@
 .app {
-
-
+  height: 100%;
 }
 
 .title-bar {
@@ -10,9 +9,7 @@
 
 .container {
   display: flex;
-
-
-  height: calc(100vh - 8rem);
+  height: 100vh;
 }
 
 .tool-bar {
