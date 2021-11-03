@@ -1,9 +1,11 @@
 import {DelaunayTriangulationBuilder} from "jsts/org/locationtech/jts/triangulate";
 import {WKTReader} from "jsts/org/locationtech/jts/io";
 import BufferOp from "jsts/org/locationtech/jts/operation/buffer/BufferOp";
-import {GeometryCollection, GeometryFactory} from "jsts/org/locationtech/jts/geom";
+import {Geometry, GeometryCollection, GeometryFactory} from "jsts/org/locationtech/jts/geom";
+import "jsts/org/locationtech/jts/monkey.js";
 import {BufferAttribute, BufferGeometry, LineCurve, Vector3} from "three";
 import {CustomLine} from "./test-geo";
+import {UnaryUnionOp} from "jsts/org/locationtech/jts/operation/union";
 
 function triangulationFromPolygon(polygon) {
     const builder = new DelaunayTriangulationBuilder();
@@ -137,6 +139,48 @@ export function displayPoint(aString) {
     };
 }
 
+export function geometriesUnion(geos) {
+    if (geos.length === 1){
+        return geos[0];
+    }
+
+    const geoFac = new GeometryFactory();
+    const geoCollection = geoFac.createGeometryCollection(geos).union();
+
+    return geoCollection;
+}
+
+export function multiplePoints(){
+    let reader = new WKTReader();
+
+    const strings = [
+        'POINT (-20 0)',
+        'POINT (20 0)',
+        'POINT (0 15)'
+    ];
+
+    let geos = [];
+
+    for (const aString of strings) {
+        const pt = reader.read(aString);
+        const buffer = BufferOp.bufferOp(pt, 30)
+
+        geos.push(buffer);
+    }
+
+    const collection = geometriesUnion(geos);
+
+    let geom = UnaryUnionOp.union(collection);
+
+    const triangulation = triangulationFromPolygon(geom);
+
+    return {
+        buffer: bufferFromTriangulation(triangulation),
+        edges: edgesFromTriangulation(triangulation)
+    };
+
+}
+
 export function displayPointTest(){
-    return displayPoint('POINT (-20 0)');
+    return multiplePoints();
 }
