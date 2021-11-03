@@ -55,7 +55,7 @@ export class CustomLine extends Curve {
 }
 
 function shaderMaterialEdges() {
-    return new ShaderMaterial( shaders.edges );
+    return new ShaderMaterial( shaders.grid );
 }
 
 export function shaderNormal() {
@@ -64,7 +64,7 @@ export function shaderNormal() {
 
 export function testTube() {
     // const material = new MeshBasicMaterial( { color: 0xff2211 } );
-    const material = shaderNormal();
+    const material = shaderMaterialEdges();
     const path = new CustomSinCurve( 10 );
 
     return TubeGeo(path, 100, 2., 32, false, material);
@@ -85,7 +85,7 @@ export function testJSTSTriangulation(scene) {
 
     scene.add(mesh);
 
-    const blWhiteShader = new ShaderMaterial(shaders.grid);
+    const blWhiteShader = new ShaderMaterial(shaders.normalShader);
 
     for (const line in edges) {
         const aLine = edges[line];
