@@ -13,6 +13,8 @@ function triangulationFromPolygon(polygon) {
 
     let triangulation = builder.getTriangles(new GeometryFactory());
 
+    console.log(triangulation);
+
     return triangulation;
 }
 
@@ -125,7 +127,7 @@ export function displayPoint(aString) {
 
     let pt = reader.read(aString);
 
-    let buffered = BufferOp.bufferOp(pt, 40);
+    let buffered = BufferOp.bufferOp(pt, 20);
 
     const triangulation = triangulationFromPolygon(buffered);
 
