@@ -178,7 +178,15 @@ export function multiplePoints(){
         buffer: bufferFromTriangulation(triangulation),
         edges: edgesFromTriangulation(triangulation)
     };
+}
 
+export function testPolygon() {
+    let reader = new WKTReader();
+
+    const pt = reader.read('POINT (0 0)');
+    const buffer = BufferOp.bufferOp(pt, 30)
+
+    return buffer;
 }
 
 export function displayPointTest(){
