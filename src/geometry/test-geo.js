@@ -13,7 +13,6 @@ import {
 import {TubeGeo} from "./to-three";
 import {shaders} from "./shaders-materials";
 import {displayPointTest, testPolygon} from "./importing-jsts";
-import {clamp} from "three/src/math/MathUtils";
 import {clayPointTest} from "./clayBrick/clay-point";
 import {testClayCurve} from "./clayBrick/clay-pattern-curve";
 import {polygonToPolylines} from "./jsts2Three/jsts-to-three";
@@ -95,7 +94,7 @@ export function testJSTSTriangulation(scene) {
 
         // console.log(aLine);
 
-        const locTubeGeo = TubeGeo(aLine, 1, .5, 32, false, blWhiteShader);
+        const locTubeGeo = TubeGeo(aLine, 32, .5, 32, false, blWhiteShader);
 
         // console.log(locTubeGeo);
         scene.add(locTubeGeo);
@@ -119,7 +118,7 @@ export function geoTubeTest() {
 
     let tubes = [];
     for (const pl of pls) {
-        tubes.push(TubeGeo(pl, 0, .5, 32, false, blWhiteShader))
+        tubes.push(TubeGeo(pl, 32, .5, 32, false, blWhiteShader))
     }
 
     return tubes;
