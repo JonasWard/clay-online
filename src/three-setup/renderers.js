@@ -25,11 +25,8 @@ export function resize(mount, renderer, camera) {
     const {clientWidth, clientHeight} = mount.current
 
     if (camera) {
-        camera.left = clientWidth / -16
-        camera.right = clientWidth / 16
-        camera.top = clientHeight / 16
-        camera.bottom = clientHeight / -16
-        camera.updateProjectionMatrix()
+        camera.aspect = clientWidth / clientHeight;
+        camera.updateProjectionMatrix();
     }
 
     renderer.setSize(clientWidth, clientHeight)
