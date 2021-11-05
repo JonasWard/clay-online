@@ -1,5 +1,4 @@
-import {Curve, Math, Matrix4, Vector3} from 'three';
-import {clamp} from "three/src/math/MathUtils";
+import {Curve, Vector3} from 'three';
 
 export class Polyline extends Curve {
     constructor(points, closed = true) {
@@ -60,6 +59,10 @@ export class Polyline extends Curve {
         return this.cacheArcLengths;
     }
 
+    getTangentAt(u, optionalTarget = new Vector3()) {
+        return this.getTangent(u * this.getPointCount(), optionalTarget)
+    }
+
     getTangent(t, optionalTarget = new Vector3()) {
         const locT = t % 1.;
         let roundT = t - t % 1.;
@@ -68,26 +71,19 @@ export class Polyline extends Curve {
             return null;
         }
 
-        console.log(roundT);
-        console.log(this.dirs);
+        let vT;
 
         if (t > 0 && t < this.getPointCount()) {
             if ( locT < .0001 ) {
-                const v1 = this.dirs[roundT].copy();
-                const v0 = this.dirs[roundT - 1].copy();
+                const v1 = new Vector3().copy(this.dirs[roundT]);
+                const v0 = new Vector3().copy(this.dirs[roundT - 1]);
 
                 v0.normalize();
                 v1.normalize();
 
-                const vT = new Vector3().addVectors(v0, v1);
-                vT.normalize();
-
-                return vT;
+                vT = new Vector3().addVectors(v0, v1);
             } else {
-                const vT = this.dirs[roundT].copy();
-                vT.normalize();
-
-                return vT;
+                vT = new Vector3().copy(this.dirs[roundT]);
             }
         }
 
@@ -95,153 +91,26 @@ export class Polyline extends Curve {
             roundT %= this.getPointCount();
 
             if ( locT < .0001 ) {
-                const v1 = this.dirs[roundT].copy();
-                const v0 = this.dirs[(roundT - 1) % this.getPointCount()].copy();
+                const v1 = new Vector3().copy(this.dirs[roundT]);
+                const v0 = new Vector3().copy(this.dirs[(roundT + this.getPointCount() - 1) % this.getPointCount()]);
 
                 v0.normalize();
                 v1.normalize();
 
-                const vT = new Vector3().addVectors(v0, v1);
-                vT.normalize();
-
-                return vT;
+                vT = new Vector3().addVectors(v0, v1);
             } else {
-                const vT = this.dirs[roundT].copy();
-                vT.normalize();
-
-                return vT;
+                vT = new Vector3().copy(this.dirs[roundT]);
             }
         } else {
             if (t < 1) {
-                const vT = this.dirs[0].copy();
-                vT.normalize();
-
-                return vT;
-                // return this.dirs[0].copy().normalize();
+                vT = new Vector3().copy(this.dirs[0]);
             } else {
-                const vT = this.dirs[this.dirs.length - 1].copy();
-                vT.normalize();
-
-                return vT;
+                vT = new Vector3().copy(this.dirs[this.dirs.length - 1]);
             }
         }
-    }
 
-    computeFrenetFrames( segments, closed ) {
-
-        // see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
-
-        const normal = new Vector3();
-
-        const tangents = [];
-        const normals = [];
-        const binormals = [];
-
-        const vec = new Vector3();
-        const mat = new Matrix4();
-
-        // compute the tangent vectors for each segment on the curve
-
-        console.log("segements : " + segments);
-
-        for (let i = 0; i <= segments; i++) {
-
-            const t = i / segments;
-
-            tangents[i] = this.getTangent(t, new Vector3());
-
-        }
-
-        console.log(tangents);
-
-        // select an initial normal vector perpendicular to the first tangent vector,
-        // and in the direction of the minimum tangent xyz component
-
-        normals[0] = new Vector3();
-        binormals[0] = new Vector3();
-        let min = Number.MAX_VALUE;
-        const tx = Math.abs(tangents[0].x);
-        const ty = Math.abs(tangents[0].y);
-        const tz = Math.abs(tangents[0].z);
-
-        if (tx <= min) {
-
-            min = tx;
-            normal.set(1, 0, 0);
-
-        }
-
-        if (ty <= min) {
-
-            min = ty;
-            normal.set(0, 1, 0);
-
-        }
-
-        if (tz <= min) {
-
-            normal.set(0, 0, 1);
-
-        }
-
-        vec.crossVectors(tangents[0], normal).normalize();
-
-        normals[0].crossVectors(tangents[0], vec);
-        binormals[0].crossVectors(tangents[0], normals[0]);
-
-
-        // compute the slowly-varying normal and binormal vectors for each segment on the curve
-
-        for (let i = 1; i <= segments; i++) {
-
-            normals[i] = normals[i - 1].clone();
-
-            binormals[i] = binormals[i - 1].clone();
-
-            vec.crossVectors(tangents[i - 1], tangents[i]);
-
-            if (vec.length() > Number.EPSILON) {
-
-                vec.normalize();
-
-                const theta = Math.acos(clamp(tangents[i - 1].dot(tangents[i]), -1, 1)); // clamp for floating pt errors
-
-                normals[i].applyMatrix4(mat.makeRotationAxis(vec, theta));
-
-            }
-
-            binormals[i].crossVectors(tangents[i], normals[i]);
-
-        }
-
-        // if the curve is closed, postprocess the vectors so the first and last normal vectors are the same
-
-        if (closed === true) {
-
-            let theta = Math.acos(clamp(normals[0].dot(normals[segments]), -1, 1));
-            theta /= segments;
-
-            if (tangents[0].dot(vec.crossVectors(normals[0], normals[segments])) > 0) {
-
-                theta = -theta;
-
-            }
-
-            for (let i = 1; i <= segments; i++) {
-
-                // twist a little...
-                normals[i].applyMatrix4(mat.makeRotationAxis(tangents[i], theta * i));
-                binormals[i].crossVectors(tangents[i], normals[i]);
-
-            }
-
-        }
-
-        return {
-            tangents: tangents,
-            normals: normals,
-            binormals: binormals
-        };
+        vT.normalize();
+        return optionalTarget.set(vT.x, vT.y, vT.z);
     }
 
     _tConstraining(t) {
@@ -268,13 +137,13 @@ export class Polyline extends Curve {
     }
 
     getPoint( t, optionalTarget = new Vector3() ) {
-        // t *= this.getPointCount();
+        t *= this.getPointCount();
 
-        console.log(t);
+        // console.log(t);
 
         const {locT, t0} = this._tConstraining(t);
 
-        console.log(locT, t0);
+        // console.log(locT, t0);
 
         const v0 = this.points[t0];
         const vDir = this.dirs[t0];
