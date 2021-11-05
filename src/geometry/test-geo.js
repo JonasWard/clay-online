@@ -12,8 +12,11 @@ import {
 } from "three";
 import {TubeGeo} from "./to-three";
 import {shaders} from "./shaders-materials";
-import {displayPointTest} from "./importing-jsts";
+import {displayPointTest, testPolygon} from "./importing-jsts";
 import {clamp} from "three/src/math/MathUtils";
+import {clayPointTest} from "./clayBrick/clay-point";
+import {testClayCurve} from "./clayBrick/clay-pattern-curve";
+import {polygonToPolylines} from "./jsts2Three/jsts-to-three";
 
 class CustomSinCurve extends Curve {
 
@@ -108,9 +111,30 @@ export function testJSTSTriangulation(scene) {
 //         new LineBasicMaterial()
 //     );
 // }
+export function geoTubeTest() {
+    const polygon = testPolygon();
+    const pls = polygonToPolylines(polygon);
+
+    const blWhiteShader = new ShaderMaterial(shaders.normalShader);
+
+    let tubes = [];
+    for (const pl of pls) {
+        tubes.push(TubeGeo(pl, 0, .5, 32, false, blWhiteShader))
+    }
+
+    return tubes;
+}
+
 
 export function addTestGeos(scene) {
     scene.add(testTube());
+
+    clayPointTest();
+    testClayCurve(scene);
+
+    for (const tube of geoTubeTest()) {
+        scene.add(tube);
+    }
 
     testJSTSTriangulation(scene);
 }
