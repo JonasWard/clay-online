@@ -272,5 +272,7 @@ export class Polyline extends Curve {
         const v = new Vector3().addVectors(v0, new Vector3().addScaledVector(locT, vDir));
 
         return optionalTarget.set(v.x, v.y, v.z);
+
+        //just checking
     }
 }
