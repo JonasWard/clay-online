@@ -150,29 +150,44 @@ export function geometriesUnion(geos) {
     return geoCollection;
 }
 
-export function multiplePoints(){
-    let reader = new WKTReader();
+export function readWKString(strings) {
+    const reader = new WKTReader();
+    const geos = [];
 
+    for (const aString of strings) {
+        geos.push(reader.read(aString));
+    }
+
+    return geos;
+}
+
+export function geometryUnion(geos) {
+    const collection = geometriesUnion(geos);
+
+    return UnaryUnionOp.union(collection);
+}
+
+export function multiplePoints(){
     const strings = [
         'POINT (-20 0)',
         'POINT (20 0)',
         'POINT (0 15)'
     ];
 
-    let geos = [];
+    const geos = readWKString(strings);
+    let bufferedGeos = [];
 
-    for (const aString of strings) {
-        const pt = reader.read(aString);
-        const buffer = BufferOp.bufferOp(pt, 30)
-
-        geos.push(buffer);
+    for (const geo of geos) {
+        bufferedGeos.push(BufferOp.bufferOp(geo, 30));
     }
 
-    const collection = geometriesUnion(geos);
+    const geom = geometryUnion(bufferedGeos);
 
-    let geom = UnaryUnionOp.union(collection);
+    return geom;
+}
 
-    const triangulation = triangulationFromPolygon(geom);
+export function triangulatePolyline(plg) {
+    const triangulation = triangulationFromPolygon(plg);
 
     return {
         buffer: bufferFromTriangulation(triangulation),
@@ -181,14 +196,14 @@ export function multiplePoints(){
 }
 
 export function testPolygon() {
-    let reader = new WKTReader();
+    // let reader = new WKTReader();
+    //
+    // const pt = reader.read('POINT (0 0)');
+    // const buffer = BufferOp.bufferOp(pt, 30)
 
-    const pt = reader.read('POINT (0 0)');
-    const buffer = BufferOp.bufferOp(pt, 30)
-
-    return buffer;
+    return multiplePoints();
 }
 
 export function displayPointTest(){
-    return multiplePoints();
+    return triangulatePolyline(multiplePoints());
 }
