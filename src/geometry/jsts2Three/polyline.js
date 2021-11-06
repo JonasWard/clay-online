@@ -8,6 +8,10 @@ export class Polyline extends Curve {
         this.points = points;
         this.closed = closed;
 
+        this.init();
+    }
+
+    init() {
         this.dirs = this.getDirs();
 
         this.arcLengthDivisions = this.getPointCount();
@@ -257,22 +261,32 @@ export class Polyline extends Curve {
         };
     }
 
+    getPointAt(t, optionalTarget = new Vector3() ) {
+        return this.getPoint(t, optionalTarget);
+    }
+
     getPoint( t, optionalTarget = new Vector3() ) {
         t *= this.getPointCount();
 
-        // console.log(t);
-
         const {locT, t0} = this._tConstraining(t);
-
-        // console.log(locT, t0);
 
         const v0 = this.points[t0];
         const vDir = this.dirs[t0];
 
-        const v = new Vector3().addVectors(v0, new Vector3().addScaledVector(locT, vDir));
+        const v = new Vector3().addVectors(v0, new Vector3().addScaledVector(vDir, locT));
 
         return optionalTarget.set(v.x, v.y, v.z);
+    }
 
-        //just checking
+    makeMeWave(periods = 2., amplitude = 5.) {
+        const step = (periods * 2. * Math.PI) / this.getPointCount();
+        let phase = 0.;
+
+        for (let i = 0; i < this.getPointCount(); i++ ) {
+            this.points[i].z += amplitude * Math.sin(phase);
+            phase += step;
+        }
+
+        this.init();
     }
 }
