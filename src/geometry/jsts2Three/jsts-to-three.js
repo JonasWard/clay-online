@@ -51,10 +51,16 @@ export function polygonToPolylines(polygon){
 
     let polylines = [];
     for (const lr of lrs){
-        polylines.push(linearRingToPolyline(lr));
+        for (let i = 0; i < 50; i++ ) {
+            const pl = linearRingToPolyline(lr);
+            for (const pt of pl.points) {
+                pt.z = i;
+            }
+            polylines.push(pl);
+        }
     }
 
-    console.log(polylines);
+    // console.log(polylines);
 
     return polylines;
 }
