@@ -10,7 +10,7 @@ import {
     // Vector2,
     Vector3
 } from "three";
-import {TubeGeo} from "./to-three";
+import {SpecialTubeGeo, TubeGeo} from "./to-three";
 import {shaders} from "./shaders-materials";
 import {displayPointTest, testPolygon} from "./importing-jsts";
 import {clayPointTest} from "./clayBrick/clay-point";
@@ -78,15 +78,6 @@ export function testJSTSTriangulation(scene) {
 
     const mesh = new Mesh(buffer, material);
 
-    // const lines = new LineSegments(
-    //     new EdgesGeometry(bufferGeo, 0),
-    //     new LineBasicMaterial({color:'black', linewidth: 3.})
-    // );
-
-    // mesh.add(edges);
-
-    scene.add(mesh);
-
     const blWhiteShader = new ShaderMaterial(shaders.normalShader);
 
     for (const line in edges) {
@@ -100,16 +91,9 @@ export function testJSTSTriangulation(scene) {
         scene.add(locTubeGeo);
     }
 
-
-    // scene.add(locTubeGeo);
+    scene.add(mesh);
 }
-//
-// export function getLinesFromMesh(mesh) {
-//     return new LineSegments(
-//         new EdgesGeometry(mesh.geometry),
-//         new LineBasicMaterial()
-//     );
-// }
+
 export function geoTubeTest() {
     const polygon = testPolygon();
     const pls = polygonToPolylines(polygon);
@@ -118,7 +102,8 @@ export function geoTubeTest() {
 
     let tubes = [];
     for (const pl of pls) {
-        tubes.push(TubeGeo(pl, 32, .5, 32, false, blWhiteShader))
+        pl.makeMeWave(4., 10.);
+        tubes.push(TubeGeo(pl, pl.getPointCount(), .5, 6, false, blWhiteShader))
     }
 
     return tubes;
@@ -135,5 +120,5 @@ export function addTestGeos(scene) {
         scene.add(tube);
     }
 
-    testJSTSTriangulation(scene);
+    // testJSTSTriangulation(scene);
 }
