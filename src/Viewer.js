@@ -2,6 +2,8 @@ import React, {useEffect, useRef} from 'react';
 import Measure from 'react-measure';
 import {cleanUp, setUp} from "./three-setup/set-up";
 import {resize} from "./three-setup/renderers";
+import {GUI} from 'three/examples/jsm/libs/dat.gui.module';
+import {createGUI} from "./three-setup/gui-setup";
 
 import './Viewer.scss';
 
@@ -10,6 +12,9 @@ function Viewer() {
     const rendererRef = useRef(null);
     const cameraRef = useRef(null);
 
+    let gui;
+
+
     useEffect(() => {
         console.log(mount);
 
@@ -17,6 +22,8 @@ function Viewer() {
 
         rendererRef.current = renderer;
         cameraRef.current = camera;
+
+        gui = createGUI(scene);
 
         return () => {
             cleanUp(mount, renderer, frameId);
