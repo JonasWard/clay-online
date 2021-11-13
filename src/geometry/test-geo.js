@@ -16,6 +16,7 @@ import {displayPointTest, testPolygon} from "./importing-jsts";
 import {clayPointTest} from "./clayBrick/clay-point";
 import {testClayCurve} from "./clayBrick/clay-pattern-curve";
 import {polygonToPolylines} from "./jsts2Three/jsts-to-three";
+import {outerProfile} from "./clayBrick/clay-simple-base";
 
 class CustomSinCurve extends Curve {
 
@@ -112,6 +113,13 @@ export function geoTubeTest() {
 
 export function addTestGeos(scene) {
     scene.add(testTube());
+
+    const baseProfile = outerProfile();
+    const basePl = baseProfile.toPolyline();
+    basePl.makeMeWave(4., 10.);
+
+    const tubed = TubeGeo(basePl, basePl.getPointCount(), .5, 6, false, shaderMaterialEdges());
+    scene.add(tubed);
 
     clayPointTest();
     testClayCurve(scene);
