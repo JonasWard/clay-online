@@ -178,7 +178,7 @@ export function multiplePoints(){
     let bufferedGeos = [];
 
     for (const geo of geos) {
-        bufferedGeos.push(BufferOp.bufferOp(geo, 30));
+        bufferedGeos.push(BufferOp.bufferOp(geo, 30, 100));
     }
 
     const geom = geometryUnion(bufferedGeos);
