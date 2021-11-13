@@ -26,12 +26,16 @@ export class ClayPoint {
         );
     }
 
-    toCoordinate(value) {
+    toCoordinate() {
         return new Coordinate(
             this.position.x,
             this.position.y,
             this.position.z
         )
+    }
+
+    toVector3() {
+        return new Vector3().copy(this.position);
     }
 }
 
