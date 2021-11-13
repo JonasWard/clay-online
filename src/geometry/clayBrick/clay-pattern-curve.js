@@ -1,8 +1,9 @@
 import {GeometryFactory} from "jsts/org/locationtech/jts/geom";
 import {ClayPoint} from './clay-point';
 import {Vector3} from "three";
+import {Polyline} from "../jsts2Three/polyline";
 
-class ClayPatternCurve {
+export class ClayPatternCurve {
     clayPoints;
 
     constructor(clayPoints) {
@@ -27,6 +28,16 @@ class ClayPatternCurve {
         // const lr = new LinearRing(coordinates);
         // return new Polygon(lr);
     }
+
+    toPolyline() {
+        let positions = [];
+
+        for (const pt of this.clayPoints) {
+            positions.push(pt.toVector3());
+        }
+
+        return new Polyline(positions);
+    }
 }
 
 export function testClayCurve(scene = null) {
@@ -50,11 +61,6 @@ export function testClayCurve(scene = null) {
     ];
 
     const clayCurve = new ClayPatternCurve(pts);
-    console.log(clayCurve);
-
-    console.log(clayCurve.toPolygon());
-
-    console.log(scene);
 
     if (scene) {
         // console.log("is not null?");
