@@ -17,6 +17,33 @@ export const shaders = {
         uniforms: {}
     },
 
+    smokeShader: {
+        fragmentShader: `
+            uniform vec2 res;
+            uniform sampler2D bufferTexture;
+            uniform vec3 smokeSource;
+            
+            void main() {
+                vec2 pixel = gl_FragCoord.xy / res.xy;
+                gl_FragColor = texture2D( bufferTexture, pixel );
+            
+                //Get the distance of the current pixel from the smoke source
+                float dist = distance(smokeSource.xy,gl_FragCoord.xy);
+                //Generate smoke when mouse is pressed
+                gl_FragColor.rgb += smokeSource.z * max(15.0-dist,0.0);
+            
+                //Smoke diffuse
+                float xPixel = 1.0/res.x;//The size of a single pixel
+                float yPixel = 1.0/res.y;
+                vec4 rightColor = texture2D(bufferTexture,vec2(pixel.x+xPixel,pixel.y));
+                vec4 leftColor = texture2D(bufferTexture,vec2(pixel.x-xPixel,pixel.y));
+                vec4 upColor = texture2D(bufferTexture,vec2(pixel.x,pixel.y+yPixel));
+                vec4 downColor = texture2D(bufferTexture,vec2(pixel.x,pixel.y-yPixel));
+                //Diffuse equation
+                gl_FragColor.rgb += 14.0 * 0.016 * (leftColor.rgb + rightColor.rgb + downColor.rgb + upColor.rgb - 4.0 * gl_FragColor.rgb);
+            }`
+    },
+
     gridNormal: {
         vertexShader: `
             varying vec3 v_Position;
