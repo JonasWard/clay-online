@@ -30,3 +30,10 @@
   width: 12rem;
   background-color: grey;
 }
+
+#button {
+  position: absolute;
+  bottom: 15px;
+  left: calc(50% - 40px);
+
+}
