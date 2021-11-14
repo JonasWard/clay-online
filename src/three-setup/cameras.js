@@ -26,6 +26,6 @@ export function getPerspectiveCamera(mount) {
         clientWidth / clientHeight
     );
 
-    camera.position.z = 20;
+    camera.position.z = 500;
     return camera;
 }
