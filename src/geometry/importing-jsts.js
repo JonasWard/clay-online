@@ -15,7 +15,7 @@ function triangulationFromPolygon(polygon) {
 
     let triangulation = builder.getTriangles(new GeometryFactory());
 
-    console.log(triangulation);
+    // console.log(triangulation);
 
     return triangulation;
 }
@@ -124,12 +124,16 @@ function bufferFromTriangulation(triangulation) {
     return bufferGeo;
 }
 
+export function createBuffer(geom, radius, segments = 32) {
+    return BufferOp.bufferOp(geom, radius, segments);
+}
+
 export function displayPoint(aString) {
     let reader = new WKTReader();
 
     let pt = reader.read(aString);
 
-    let buffered = BufferOp.bufferOp(pt, 20);
+    let buffered = createBuffer(pt, 20);
 
     const triangulation = triangulationFromPolygon(buffered);
 
@@ -148,6 +152,14 @@ export function geometriesUnion(geos) {
     const geoCollection = geoFac.createGeometryCollection(geos).union();
 
     return geoCollection;
+}
+
+export function geometriesDifference(geosA, geosB) {
+    return geosA.difference(geosB);
+}
+
+export function geometriesIntersection(geosA, geosB) {
+    return geosA.intersection(geosB);
 }
 
 export function readWKString(strings) {
