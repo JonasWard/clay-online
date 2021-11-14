@@ -1,5 +1,44 @@
-import {Curve, Matrix4, Vector3} from 'three';
+import {Curve, Matrix4, Vector3} from "three";
 import {clamp} from "three/src/math/MathUtils";
+
+export class CustomSinCurve extends Curve {
+
+    constructor( scale = 1 ) {
+
+        super();
+
+        this.scale = scale;
+
+    }
+
+    getPoint( t, optionalTarget = new Vector3() ) {
+
+        const tx = t * 3 - 1.5;
+        const ty = Math.sin( 2 * Math.PI * t );
+        const tz = 0;
+
+        return optionalTarget.set( tx, ty, tz ).multiplyScalar( this.scale );
+    }
+}
+
+export class CustomLine extends Curve {
+
+    constructor(v0, v1) {
+        super();
+
+        this.v0 = v0;
+        this.vDir = v1 - this.v0;
+
+        this.scale = 1.;
+    }
+
+    getPoint(t, optionalTarget = new Vector3()) {
+        const v = this.v0 + t * this.vDir;
+        // console.log(v);
+
+        return optionalTarget.set(v.x, v.y, v.z).multiplyScalar( this.scale );
+    }
+}
 
 export class Polyline extends Curve {
     constructor(points, closed = true) {
@@ -224,11 +263,11 @@ export class Polyline extends Curve {
 
         }
 
-        console.log({
-            tangents: tangents,
-            normals: normals,
-            binormals: binormals
-        });
+        // console.log({
+        //     tangents: tangents,
+        //     normals: normals,
+        //     binormals: binormals
+        // });
 
         return {
             tangents: tangents,
@@ -278,6 +317,12 @@ export class Polyline extends Curve {
         return optionalTarget.set(v.x, v.y, v.z);
     }
 
+    moveToHeight(height = 0.){
+        for (const point of this.points) {
+            point.y = height;
+        }
+    }
+
     makeMeWave(periods = 2., amplitude = 5.) {
         const step = (periods * 2. * Math.PI) / this.getPointCount();
         let phase = 0.;
@@ -288,5 +333,11 @@ export class Polyline extends Curve {
         }
 
         this.init();
+    }
+
+    cadFlip() {
+        for (const pt of this.points) {
+            pt.set(pt.x, pt.z, -pt.y);
+        }
     }
 }
