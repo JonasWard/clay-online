@@ -1,7 +1,7 @@
 import {GeometryFactory} from "jsts/org/locationtech/jts/geom";
 import {ClayPoint} from './clay-point';
 import {Vector3} from "three";
-import {Polyline} from "../jsts2Three/polyline";
+import {Polyline} from "../three/three-poly-line";
 
 export class ClayPatternCurve {
     clayPoints;
@@ -13,23 +13,44 @@ export class ClayPatternCurve {
     toPolygon() {
         let coordinates =[];
 
-        // const crds = new Coordinates();
-        //
-        // crds.
-
         for (const pt of this.clayPoints) {
             coordinates.push(pt.toCoordinate());
         }
 
         coordinates.push(coordinates[0]);
 
-        return new GeometryFactory().createPolygon(coordinates)
-
-        // const lr = new LinearRing(coordinates);
-        // return new Polygon(lr);
+        return new GeometryFactory().createPolygon(coordinates);
     }
 
     toPolyline() {
+        let positions = [];
+
+        for (const pt of this.clayPoints) {
+            positions.push(pt.toVector3());
+        }
+
+        return new Polyline(positions);
+    }
+
+    moveToHeight(height = 0.) {
+        for (const pt of this.clayPoints) {
+            pt.z = height;
+        }
+    }
+
+    applyPattern(patternFunction, parameters) {
+        if (parameters.uv) {
+            for (const pt of this.clayPoints) {
+                pt.set(patternFunction(pt.uvValue, parameters));
+            }
+        } else {
+            for (const pt of this.clayPoints) {
+                pt.set(patternFunction(pt.origin, parameters));
+            }
+        }
+    }
+
+    toThreePolyline() {
         let positions = [];
 
         for (const pt of this.clayPoints) {
