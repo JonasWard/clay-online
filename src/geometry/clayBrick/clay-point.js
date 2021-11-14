@@ -5,6 +5,7 @@ export class ClayPoint {
     origin;
     direction;
     position;
+    uvValue;
 
     constructor(origin, direction) {
         this.origin = origin;
@@ -35,7 +36,7 @@ export class ClayPoint {
     }
 
     toVector3() {
-        return new Vector3().copy(this.position);
+        return new Vector3(this.position.x, this.position.z, -this.position.y);
     }
 }
 
