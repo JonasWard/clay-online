@@ -16,46 +16,8 @@ import {displayPointTest, testPolygon} from "./importing-jsts";
 import {clayPointTest} from "./clayBrick/clay-point";
 import {testClayCurve} from "./clayBrick/clay-pattern-curve";
 import {polygonToPolylines} from "./jsts2Three/jsts-to-three";
-import {outerProfile} from "./clayBrick/clay-simple-base";
-
-class CustomSinCurve extends Curve {
-
-    constructor( scale = 1 ) {
-
-        super();
-
-        this.scale = scale;
-
-    }
-
-    getPoint( t, optionalTarget = new Vector3() ) {
-
-        const tx = t * 3 - 1.5;
-        const ty = Math.sin( 2 * Math.PI * t );
-        const tz = 0;
-
-        return optionalTarget.set( tx, ty, tz ).multiplyScalar( this.scale );
-    }
-}
-
-export class CustomLine extends Curve {
-
-    constructor(v0, v1) {
-        super();
-
-        this.v0 = v0;
-        this.vDir = v1 - this.v0;
-
-        this.scale = 1.;
-    }
-
-    getPoint(t, optionalTarget = new Vector3()) {
-        const v = this.v0 + t * this.vDir;
-        // console.log(v);
-
-        return optionalTarget.set(v.x, v.y, v.z).multiplyScalar( this.scale );
-    }
-}
+import {aSlice, constructBrick, innerProfile, outerProfile} from "./clayBrick/clay-simple-base";
+import {CustomSinCurve} from "./three/three-poly-line";
 
 function shaderMaterialEdges() {
     return new ShaderMaterial( shaders.grid );
@@ -110,23 +72,9 @@ export function geoTubeTest() {
     return tubes;
 }
 
-
 export function addTestGeos(scene) {
-    scene.add(testTube());
-
-    const baseProfile = outerProfile();
-    const basePl = baseProfile.toPolyline();
-    basePl.makeMeWave(4., 10.);
-
-    const tubed = TubeGeo(basePl, basePl.getPointCount(), .5, 6, false, shaderMaterialEdges());
-    scene.add(tubed);
-
-    clayPointTest();
-    testClayCurve(scene);
-
-    for (const tube of geoTubeTest()) {
-        scene.add(tube);
+    for (const pl of constructBrick()) {
+        const locTubeGeo = TubeGeo(pl, pl.getPointCount(), 1.5, 6, false, shaderNormal());
+        scene.add(locTubeGeo);
     }
-
-    // testJSTSTriangulation(scene);
 }
