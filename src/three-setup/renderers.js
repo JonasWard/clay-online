@@ -12,7 +12,7 @@ export function getPlanarRenderer() {
 export function getPerspectiveRenderer() {
     const renderer = new WebGL1Renderer({antialias: true, alpha: true})
 
-    renderer.setClearColor('#ffff99');
+    // renderer.setClearColor('#ffff99');
     renderer.setPixelRatio(window.devicePixelRatio);
 
     return renderer;
