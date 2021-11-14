@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/clay-online/static/css/main.bd340a46.chunk.css",
-    "main.js": "/clay-online/static/js/main.2aa3324e.chunk.js",
-    "main.js.map": "/clay-online/static/js/main.2aa3324e.chunk.js.map",
+    "main.js": "/clay-online/static/js/main.6ccdb6b6.chunk.js",
+    "main.js.map": "/clay-online/static/js/main.6ccdb6b6.chunk.js.map",
     "runtime-main.js": "/clay-online/static/js/runtime-main.7880f300.js",
     "runtime-main.js.map": "/clay-online/static/js/runtime-main.7880f300.js.map",
     "static/js/2.684e75d4.chunk.js": "/clay-online/static/js/2.684e75d4.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.7880f300.js",
     "static/js/2.684e75d4.chunk.js",
     "static/css/main.bd340a46.chunk.css",
-    "static/js/main.2aa3324e.chunk.js"
+    "static/js/main.6ccdb6b6.chunk.js"
   ]
 }
