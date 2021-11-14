@@ -5,11 +5,12 @@ import {getPerspectiveCamera} from "./cameras";
 import {start, stop} from "./render-loops";
 import {addTestGeos, testTube} from "../geometry/test-geo";
 import {displayPointTest} from "../geometry/importing-jsts";
+import {addBrick} from "../geometry/three/brick-to-scene";
 
 export function setUp(mount) {
     const scene = new Scene();
 
-    addTestGeos(scene);
+    addBrick(scene);
 
     displayPointTest();
 
