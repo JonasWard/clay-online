@@ -3,7 +3,7 @@ import {TubeGeo} from "../to-three";
 import {shaderNormal} from "../test-geo";
 import {DEFAULT_SIN_WAVE_UV_PARAMETERS, sinWaveUVPattern} from "../clayBrick/clay-patterns";
 
-const overwrites = {
+export let overwrites = {
     productionWidth: 2.5,
     baseWidth: 150.0,
     baseLength: 300.0, // always needs to be at least the same length as the brick's width
@@ -16,7 +16,7 @@ const overwrites = {
     pinDiameter1: 20.0,
     pinDelta: 250.0,
     pinDivisions: 60,
-    precision: 2.5,
+    precision: 2.0,
     bodyHeight: 160.0,
     totalHeight: 260.0,
     startHeight: -100.0,
@@ -24,6 +24,15 @@ const overwrites = {
     pattern: {
         patternFunction: sinWaveUVPattern,
         patternParameters: DEFAULT_SIN_WAVE_UV_PARAMETERS
+    }
+}
+
+export function patternMapping(patternName) {
+    switch (patternName) {
+        case "sinWave":
+            return sinWaveUVPattern;
+        default:
+            return sinWaveUVPattern;
     }
 }
 
