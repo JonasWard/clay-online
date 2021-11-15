@@ -6,7 +6,7 @@ export function sinWaveUVPattern(uv, parameters){
 export const DEFAULT_SIN_WAVE_UV_PARAMETERS = {
     amplitude: 2.,
     frequency: 2. * Math.PI / 30.0,
-    phaseDelta: 0.,
+    phaseDelta: 1.0,
     offset: 5.,
     uv: true
 };
