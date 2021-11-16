@@ -9,39 +9,9 @@ import {polylineToPolygon} from "../jsts2Three/three-to-jsts";
 import {createBuffer, geometriesDifference, geometriesIntersection, geometryUnion} from "../importing-jsts";
 import {polygonToPolylines} from "../jsts2Three/jsts-to-three";
 import {Vector2, Vector3} from "three";
-// import {DEFAULT_SIN_WAVE_UV_PARAMETERS, sinWaveUVPattern} from "./clay-patterns";
 
-let productionWidth = 2.5;
-
-let baseWidth = 150.0;
-let baseLength = 300.0; // always needs to be at least the same length as the brick's width
-let lengthBufferMultiplier = 2.0;
-
-let pinSpacing = 220.0;
-let diamondWidth = 50.0;
-let diamondHeight = 110.0;
-let diamondCount = 3;
-
-let pinDiameter0 = 40.0;
-let pinDiameter1 = 20.0;
-let pinDelta = 250.0;
-let pinDiameterDelta = (pinDiameter1 - pinDiameter0) / pinDelta;
-let pinDivisions = 60;
-
-let precision = 2.5;
-
-let bodyHeight = 160.0;
-let totalHeight = 260.0;
-let startHeight = -100.0;
-let layerHeight = 2.5;
-
-let patternFunction, patternParameters;
-
-let v0, v1;
-
-function pinRadiusAtHeight(height) {
-    // console.log(pinDiameterDelta, height, pinDiameter0);
-    return pinDiameterDelta * height + pinDiameter0;
+function pinRadiusAtHeight(p, height) {
+    return p.pinDiameterDelta * height + p.pinDiameter0;
 }
 
 function arcClayPt(i, startPhase, angleDelta, radius, basePoint, vVal = 0.) {
@@ -103,29 +73,29 @@ function lineDivisions(v0, v1, goalLength, clayPoints, vVal = 0.) {
     return length + vVal;
 }
 
-export function outerProfile(height = 0.) {
-    const v0 = new Vector3(-(baseLength - baseWidth) * .5, 0.0, height);
-    const v1 = new Vector3((baseLength - baseWidth) * .5, 0.0, height);
+export function outerProfile(p, height = 0.) {
+    const v0 = new Vector3(-(p.baseLength - p.baseWidth) * .5, 0.0, height);
+    const v1 = new Vector3((p.baseLength - p.baseWidth) * .5, 0.0, height);
 
     let clayPoints = [];
 
     let vVal = 0.;
 
-    vVal = arcDivisions(baseWidth * .5, precision, .5 * Math.PI, Math.PI, v0, clayPoints, vVal);
+    vVal = arcDivisions(p.baseWidth * .5, p.precision, .5 * Math.PI, Math.PI, v0, clayPoints, vVal);
 
-    const p0 = new Vector3(-(baseLength - baseWidth) * .5, -baseWidth * .5, height);
-    const p1 = new Vector3((baseLength - baseWidth) * .5, -baseWidth * .5, height);
+    const p0 = new Vector3(-(p.baseLength - p.baseWidth) * .5, -p.baseWidth * .5, height);
+    const p1 = new Vector3((p.baseLength - p.baseWidth) * .5, -p.baseWidth * .5, height);
 
-    vVal = lineDivisions(p0, p1, precision, clayPoints, vVal);
+    vVal = lineDivisions(p0, p1, p.precision, clayPoints, vVal);
 
-    vVal = arcDivisions(baseWidth * .5, precision, Math.PI, -.5 *Math.PI, v1, clayPoints, vVal);
+    vVal = arcDivisions(p.baseWidth * .5, p.precision, Math.PI, -.5 *Math.PI, v1, clayPoints, vVal);
 
-    const p2 = new Vector3((baseLength - baseWidth) * .5, baseWidth * .5, height);
-    const p3 = new Vector3(-(baseLength - baseWidth) * .5, baseWidth * .5, height);
+    const p2 = new Vector3((p.baseLength - p.baseWidth) * .5, p.baseWidth * .5, height);
+    const p3 = new Vector3(-(p.baseLength - p.baseWidth) * .5, p.baseWidth * .5, height);
 
-    vVal = lineDivisions(p2, p3, precision, clayPoints, vVal);
+    vVal = lineDivisions(p2, p3, p.precision, clayPoints, vVal);
 
-    arcDivisions(baseWidth * .5, precision, .5 * Math.PI, .5 * Math.PI, v0, clayPoints, vVal);
+    arcDivisions(p.baseWidth * .5, p.precision, .5 * Math.PI, .5 * Math.PI, v0, clayPoints, vVal);
 
     const clayPolyline = new ClayPatternCurve(clayPoints);
 
@@ -177,12 +147,12 @@ function simpleArcDivision(baseV, radius, arcAngle = Math.PI, startPhase = 0., d
     return new Polyline(vs);
 }
 
-function diamondPolyline(bPoint) {
+function diamondPolyline(p, bPoint) {
     return new Polyline([
-        new Vector3(bPoint.x + diamondWidth * .5, bPoint.y, 0),
-        new Vector3(bPoint.x, bPoint.y + diamondHeight * .5, 0),
-        new Vector3(bPoint.x - diamondWidth * .5, bPoint.y, 0),
-        new Vector3(bPoint.x, bPoint.y - diamondHeight * .5, 0)
+        new Vector3(bPoint.x + p.diamondWidth * .5, bPoint.y, 0),
+        new Vector3(bPoint.x, bPoint.y + p.diamondHeight * .5, 0),
+        new Vector3(bPoint.x - p.diamondWidth * .5, bPoint.y, 0),
+        new Vector3(bPoint.x, bPoint.y - p.diamondHeight * .5, 0)
     ]);
 }
 
@@ -195,27 +165,27 @@ function rectangle(bPoint, width, height) {
     ]);
 }
 
-export function innerProfileGeom(height = 0.) {
+export function innerProfileGeom(v0, v1, p, height = 0.) {
 
-    const diamondVs = simpleLineDivison(v0, v1, diamondCount + 1, false);
+    const diamondVs = simpleLineDivison(v0, v1, p.diamondCount + 1, false);
 
     let pls = [];
 
     for (const diamondV of diamondVs) {
-        const diamond = diamondPolyline(diamondV);
-        const diamondRect = rectangle(diamondV, productionWidth, baseWidth * lengthBufferMultiplier);
+        const diamond = diamondPolyline(p, diamondV);
+        const diamondRect = rectangle(diamondV, p.productionWidth, p.baseWidth * p.lengthBufferMultiplier);
 
         pls.push(diamond);
         pls.push(diamondRect);
     }
 
-    const pinDiameter = pinRadiusAtHeight(height);
+    const pinDiameter = pinRadiusAtHeight(p, height);
 
-    pls.push(simpleArcDivision(v0, pinDiameter * .5, 2. * Math.PI, 0., pinDivisions));
-    pls.push(simpleArcDivision(v1, pinDiameter * .5, 2. * Math.PI, 0., pinDivisions));
-    pls.push(rectangle(v0, productionWidth, baseWidth * lengthBufferMultiplier));
-    pls.push(rectangle(v1, productionWidth, baseWidth * lengthBufferMultiplier));
-    pls.push(rectangle(new Vector3(0, 0, 0),baseLength + baseWidth * (lengthBufferMultiplier - 1.), productionWidth));
+    pls.push(simpleArcDivision(v0, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions));
+    pls.push(simpleArcDivision(v1, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions));
+    pls.push(rectangle(v0, p.productionWidth, p.baseWidth * p.lengthBufferMultiplier));
+    pls.push(rectangle(v1, p.productionWidth, p.baseWidth * p.lengthBufferMultiplier));
+    pls.push(rectangle(new Vector3(0, 0, 0),p.baseLength + p.baseWidth * (p.lengthBufferMultiplier - 1.), p.productionWidth));
 
     let polygons = [];
     for (const pl of pls){
@@ -227,8 +197,8 @@ export function innerProfileGeom(height = 0.) {
     return geom;
 }
 
-export function innerProfile(height = 0.) {
-    const geom = innerProfileGeom(height);
+export function innerProfile(v0, v1, p, height = 0.) {
+    const geom = innerProfileGeom(v0, v1, p, height);
 
     const polylines = polygonToPolylines(geom);
 
@@ -239,27 +209,28 @@ export function innerProfile(height = 0.) {
     return polylines;
 }
 
-export function aSlice(height = 0.) {
-    const outerClayCurve = outerProfile(height);
+export function aSlice(v0, v1, p, height = 0.) {
+    const outerClayCurve = outerProfile(p, height);
 
     // console.log(outerClayCurve);
 
     // need to apply a certain pattern logic to it
     // no pattern for now!
-    outerClayCurve.applyPattern(patternFunction, patternParameters);
+
+    outerClayCurve.applyPattern(p.pattern.patternFunction, p.pattern.patternParameters);
 
     const outerGeom = outerClayCurve.toPolygon();
 
-    const bufferedOuterGeom = createBuffer(outerGeom, -productionWidth, 1);
+    const bufferedOuterGeom = createBuffer(outerGeom, -p.productionWidth, 1);
 
-    const recL = (baseLength + baseWidth * (lengthBufferMultiplier - 1.)) * .5;
+    const recL = (p.baseLength + p.baseWidth * (p.lengthBufferMultiplier - 1.)) * .5;
 
     // console.log(recL);
 
     const leftRec = rectangle(
         new Vector3(-recL * .5, 0, 0),
         recL,
-        productionWidth
+        p.productionWidth
     );
 
     // console.log(leftRec);
@@ -267,7 +238,7 @@ export function aSlice(height = 0.) {
     const leftRecPg = polylineToPolygon(leftRec);
     const unionOuterGeom = geometryUnion([bufferedOuterGeom, leftRecPg])
 
-    const innerGeom = innerProfileGeom(height);
+    const innerGeom = innerProfileGeom(v0, v1, p, height);
 
     const geom = geometriesIntersection(unionOuterGeom, innerGeom);
 
@@ -278,13 +249,13 @@ export function aSlice(height = 0.) {
     return polylines;
 }
 
-function aPinOnlySlice(height) {
+function aPinOnlySlice(v0, v1, p, height) {
     let pls = [];
 
-    const pinDiameter = pinRadiusAtHeight(height);
+    const pinDiameter = pinRadiusAtHeight(p, height);
 
-    const arcA = simpleArcDivision(v0, pinDiameter * .5, 2. * Math.PI, 0., pinDivisions);
-    const arcB = simpleArcDivision(v1, pinDiameter * .5, 2. * Math.PI, 0., pinDivisions);
+    const arcA = simpleArcDivision(v0, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions);
+    const arcB = simpleArcDivision(v1, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions);
 
     arcA.cadFlip();
     arcB.cadFlip();
@@ -295,50 +266,27 @@ function aPinOnlySlice(height) {
     return pls;
 }
 
-function readingOverwrites(overwrites) {
-    productionWidth = overwrites.productionWidth;
-    baseWidth = overwrites.baseWidth;
-    baseLength = overwrites.baseLength;
-    lengthBufferMultiplier = overwrites.lengthBufferMultiplier;
-    pinSpacing = overwrites.pinSpacing;
-    diamondWidth = overwrites.diamondWidth;
-    diamondHeight = overwrites.diamondHeight;
-    diamondCount = overwrites.diamondCount;
-    pinDiameter0 = overwrites.pinDiameter0;
-    pinDiameter1 = overwrites.pinDiameter1;
-    pinDelta = overwrites.pinDelta;
-    pinDivisions = overwrites.pinDivisions;
-    precision = overwrites.precision;
-    bodyHeight = overwrites.bodyHeight;
-    totalHeight = overwrites.totalHeight;
-    startHeight = overwrites.startHeight;
-    layerHeight = overwrites.layerHeight;
-    patternFunction = overwrites.pattern.patternFunction;
-    patternParameters = overwrites.pattern.patternParameters;
-}
 
-export function constructBrick(overwrites) {
-    v0 = new Vector3(-pinSpacing * .5, 0.0);
-    v1 = new Vector3(pinSpacing * .5, 0.0);
+export function constructBrick(p) {
+    const v0 = new Vector3(-p.pinSpacing * .5, 0.0);
+    const v1 = new Vector3(p.pinSpacing * .5, 0.0);
 
-    readingOverwrites(overwrites);
-
-    pinDiameterDelta = (pinDiameter1 - pinDiameter0) / pinDelta
+    p.pinDiameterDelta = (p.pinDiameter1 - p.pinDiameter0) / p.pinDelta;
 
     let polylines = [];
 
     let localH = 0.;
-    for (localH; localH < bodyHeight; localH += layerHeight) {
+    for (localH; localH < p.bodyHeight; localH += p.layerHeight) {
 
-        for (const pl of aSlice(localH)) {
-            pl.moveToHeight(localH + startHeight);
+        for (const pl of aSlice(v0, v1, p, localH)) {
+            pl.moveToHeight(localH + p.startHeight);
             polylines.push(pl);
         }
     }
 
-    for (localH; localH < totalHeight; localH += layerHeight) {
-        for (const pl of aPinOnlySlice(localH)) {
-            pl.moveToHeight(localH + startHeight);
+    for (localH; localH < p.totalHeight; localH += p.layerHeight) {
+        for (const pl of aPinOnlySlice(v0, v1, p, localH)) {
+            pl.moveToHeight(localH + p.startHeight);
             polylines.push(pl);
         }
     }
