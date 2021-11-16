@@ -14,9 +14,6 @@ function App() {
             <div className={'container'}>
                 <Viewer/>
             </div>
-            <a id="link" rel="ar" href="" download="asset.usdz">
-                <img id="button" width="100" src="files/arkit.png"></img>
-            </a>
         </div>
     );
 }
