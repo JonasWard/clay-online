@@ -9,9 +9,9 @@ export function createGUI(scene) {
     for (const patternName in PATTERN_LIST) {
         const localPatternGUI = gui.addFolder(patternName);
 
-        console.log(PATTERN_LIST);
-
         for (const patternParameter in PATTERN_LIST[patternName].patternParameters) {
+            console.log(patternParameter);
+
             addPatternOverwrites(localPatternGUI, patternParameter, patternName);
         }
     }
@@ -38,15 +38,22 @@ function addAllOverwrites(guiElement, overwriteElement) {
 }
 
 function addPatternOverwrites(guiElement, overwritePatternElement, patternName) {
-    overwrites.pattern.patternFunction = PATTERN_LIST[patternName].patternFunction;
 
-    guiElement.add(
+    const patternParameters = PATTERN_LIST[patternName].patternParameters;
 
+    console.log(patternName);
+
+    overwrites.pattern.patternParameters[overwritePatternElement] = patternParameters[overwritePatternElement].default;
+
+    const slider = guiElement.add(
         overwrites.pattern.patternParameters,
         overwritePatternElement,
-        overwrites.pattern.patternParameters[overwritePatternElement].min,
-        overwrites.pattern.patternParameters[overwritePatternElement].max
-    ).onChange(function (value) {
+        patternParameters[overwritePatternElement].min,
+        patternParameters[overwritePatternElement].max
+    );
+
+    slider.onChange(function (value) {
+        overwrites.pattern.patternFunction = PATTERN_LIST[patternName].patternFunction;
         overwrites.pattern.patternParameters[overwritePatternElement] = value;
         addBrick();
     });

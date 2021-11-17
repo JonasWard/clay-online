@@ -63,14 +63,14 @@ function patternClone() {
 export let overwrites = overwriteClone();
 
 
-export function patternMapping(patternName) {
-    switch (patternName) {
-        case "sinWave":
-            return sinWaveUVPattern;
-        default:
-            return sinWaveUVPattern;
-    }
-}
+// export function patternMapping(patternName) {
+//     switch (patternName) {
+//         case "sinWave":
+//             return sinWaveUVPattern;
+//         default:
+//             return sinWaveUVPattern;
+//     }
+// }
 
 function applyBrickShader(scene, pls) {
     const loader = new TextureLoader();
@@ -121,6 +121,8 @@ export function clearScene(scene){
         obj.geometry.dispose();
         obj.material.dispose();
     }
+
+    console.log(scene);
 
     geometryArray = [];
 }
