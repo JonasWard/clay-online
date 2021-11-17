@@ -52,7 +52,7 @@ export function dotEllipsoidUVPattern(uv, parameters) {
 
 export function dotInverseUVPattern(uv, parameters) {
     const locRadius = dotForUV(uv, parameters);
-    return Math.sqrt(1. - locRadius ** 2) * parameters.amplitude;
+    return (1. - Math.sqrt(1. - locRadius ** 2)) * parameters.amplitude;
 }
 
 export const DEFAULT_SIN_WAVE_UV_PARAMETERS = {
@@ -66,7 +66,7 @@ export const DEFAULT_SIN_WAVE_UV_PARAMETERS = {
 export const DEFAULT_UV_DOT_PARAMETERS = {
     baseU: {default: 0., min: -100., max: 100.},
     baseV: {default: 0., min: -100., max: 100.},
-    amplitude: {default: -5., min: -20., max: 20.},
+    amplitude: {default: 10., min: -20., max: 20.},
     uSpacing: {default: 50., min: 0., max: 100.},
     vSpacing: {default: 50., min: 0., max: 100.},
     radius: {default: 25., min: 2., max: 50.},
