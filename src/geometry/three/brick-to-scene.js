@@ -72,9 +72,10 @@ export let overwrites = overwriteClone();
 //     }
 // }
 
-function applyBrickShader(scene, pls) {
+function applyBrickShader(scene, pls, parameters) {
     const loader = new TextureLoader();
 
+    const pipeRadius = parameters.layerHeight * .6;
 
     loader.load(
         // resource URL
@@ -90,7 +91,7 @@ function applyBrickShader(scene, pls) {
             // const brickShader = shaderNormal();
 
             for (const pl of pls) {
-                const tubeGeo = new TubeGeometry(pl, pl.getPointCount(), 1.5, 6, false);
+                const tubeGeo = new TubeGeometry(pl, pl.getPointCount(), pipeRadius, 6, true);
                 const locMesh = new Mesh(tubeGeo, brickShader);
 
                 geometryArray.push(locMesh);
@@ -133,7 +134,5 @@ export function addBrick() {
 
     const pls = constructBrick(overwrites)
 
-    applyBrickShader(scene, pls);
-
-    console.log(scene.children);
+    applyBrickShader(scene, pls, overwrites);
 }
