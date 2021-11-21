@@ -3,7 +3,6 @@ import {getPerspectiveRenderer, resize} from "./renderers";
 import {getOrbitControls} from "./orbit-controls";
 import {getPerspectiveCamera} from "./cameras";
 import {start, stop} from "./render-loops";
-import {addTestGeos, testTube} from "../geometry/test-geo";
 import {displayPointTest} from "../geometry/importing-jsts";
 import {addBrick, addLighting} from "../geometry/three/brick-to-scene";
 
@@ -13,7 +12,8 @@ export let renderer;
 export function setUp(mount) {
     scene = new Scene();
 
-    addLighting(scene);
+    const light = addLighting();
+    scene.add(light);
 
     addBrick();
 
