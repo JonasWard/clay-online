@@ -81,6 +81,21 @@ export function dotInverseUVPattern(uv, parameters) {
     return (1. - Math.sqrt(1. - locRadius ** 2)) * parameters.amplitude;
 }
 
+export function edgeUVConstraining(uv, easingParameters) {
+    const length = uv.x;
+    if (length >= easingParameters.endLength | length <= easingParameters.startLength){
+        return 0.;
+    } else if (length >= easingParameters.startMaxLength & length <= easingParameters.endMaxLength){
+        return 1.;
+    } else if (length < easingParameters.startMaxLength) {
+        return (length - easingParameters.startLength) * easingParameters.easingDelta;
+    } else if (length > easingParameters.endMaxLength) {
+        return 1. - (length - easingParameters.endMaxLength) * easingParameters.easingDelta;
+    } else {
+        return null;
+    }
+}
+
 export function cylinderUVFunction(uv, parameters) {
     let {localU, localV} = dotCylinderForUV(uv, parameters);
 
