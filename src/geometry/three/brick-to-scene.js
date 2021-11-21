@@ -27,6 +27,8 @@ export const OVERWRITE_SETTINGS = {
     totalHeight: {default: 260.0, min: 1.0, max: 10.},
     startHeight: {default: -100.0, min: 1.0, max: 10.},
     layerHeight: {default: 2.5, min: 1.0, max: 10.},
+    easingStart: {default: 50., min: 0., max: 250.},
+    easingEnd: {default: 50., min: 0., max: 250.},
     pattern: {
         patternFunction: {default: sinWaveUVPattern},
         patternParameters: {default: DEFAULT_SIN_WAVE_UV_PARAMETERS}
