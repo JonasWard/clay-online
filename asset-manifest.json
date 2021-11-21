@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/clay-online/static/css/main.bd340a46.chunk.css",
-    "main.js": "/clay-online/static/js/main.dc36e399.chunk.js",
-    "main.js.map": "/clay-online/static/js/main.dc36e399.chunk.js.map",
+    "main.js": "/clay-online/static/js/main.5acc646f.chunk.js",
+    "main.js.map": "/clay-online/static/js/main.5acc646f.chunk.js.map",
     "runtime-main.js": "/clay-online/static/js/runtime-main.7880f300.js",
     "runtime-main.js.map": "/clay-online/static/js/runtime-main.7880f300.js.map",
-    "static/js/2.e030ab01.chunk.js": "/clay-online/static/js/2.e030ab01.chunk.js",
-    "static/js/2.e030ab01.chunk.js.map": "/clay-online/static/js/2.e030ab01.chunk.js.map",
+    "static/js/2.e9987f8d.chunk.js": "/clay-online/static/js/2.e9987f8d.chunk.js",
+    "static/js/2.e9987f8d.chunk.js.map": "/clay-online/static/js/2.e9987f8d.chunk.js.map",
     "static/js/3.eca0207d.chunk.js": "/clay-online/static/js/3.eca0207d.chunk.js",
     "static/js/3.eca0207d.chunk.js.map": "/clay-online/static/js/3.eca0207d.chunk.js.map",
     "index.html": "/clay-online/index.html",
     "static/css/main.bd340a46.chunk.css.map": "/clay-online/static/css/main.bd340a46.chunk.css.map",
-    "static/js/2.e030ab01.chunk.js.LICENSE.txt": "/clay-online/static/js/2.e030ab01.chunk.js.LICENSE.txt"
+    "static/js/2.e9987f8d.chunk.js.LICENSE.txt": "/clay-online/static/js/2.e9987f8d.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.7880f300.js",
-    "static/js/2.e030ab01.chunk.js",
+    "static/js/2.e9987f8d.chunk.js",
     "static/css/main.bd340a46.chunk.css",
-    "static/js/main.dc36e399.chunk.js"
+    "static/js/main.5acc646f.chunk.js"
   ]
 }
