@@ -1,6 +1,12 @@
 import {GUI} from "three/examples/jsm/libs/dat.gui.module";
 import {USDZExporter} from "three/examples/jsm/exporters/USDZExporter";
-import {addBrick, clearScene, overwrites} from "../geometry/three/brick-to-scene";
+import {
+    addBrick,
+    clearScene,
+    OVERWRITE_SETTINGS,
+    overwrites,
+    updateEasingSettings
+} from "../geometry/three/brick-to-scene";
 import {PATTERN_LIST} from "../geometry/clayBrick/clay-patterns";
 
 export function createGUI(scene) {
@@ -18,9 +24,9 @@ export function createGUI(scene) {
 
     const defaultParameters = gui.addFolder("constructionParameters");
 
-    for (const overwrite in overwrites) {
-        if (overwrite !== "pattern") {
-            addAllOverwrites(defaultParameters, overwrite);
+    for (const overwriteName in overwrites) {
+        if (overwriteName !== "pattern" && OVERWRITE_SETTINGS.hasOwnProperty(overwriteName)) {
+            addAllOverwrites(defaultParameters, overwriteName);
         }
     }
 }
@@ -33,6 +39,8 @@ function addAllOverwrites(guiElement, overwriteElement) {
         overwrites[overwriteElement].max
     ).onChange(function (value) {
         overwrites[overwriteElement] = value;
+        // updateEasingSettings();
+
         addBrick();
     });
 }
@@ -55,6 +63,8 @@ function addPatternOverwrites(guiElement, overwritePatternElement, patternName) 
     slider.onChange(function (value) {
         overwrites.pattern.patternFunction = PATTERN_LIST[patternName].patternFunction;
         overwrites.pattern.patternParameters[overwritePatternElement] = value;
+        // updateEasingSettings();
+
         addBrick();
     });
 }
