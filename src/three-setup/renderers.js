@@ -1,4 +1,5 @@
-import {WebGL1Renderer, WebGLRenderer} from 'three'
+import {PCFShadowMap, WebGL1Renderer, WebGLRenderer} from 'three'
+import {createHUD} from "../geometry/three/brick-to-scene";
 
 export function getPlanarRenderer() {
     const renderer = new WebGLRenderer({antialias: true});
@@ -14,6 +15,9 @@ export function getPerspectiveRenderer() {
 
     // renderer.setClearColor('#ffff99');
     renderer.setPixelRatio(window.devicePixelRatio);
+
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFShadowMap;
 
     return renderer;
 }
