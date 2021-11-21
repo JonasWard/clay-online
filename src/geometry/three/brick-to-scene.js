@@ -8,6 +8,7 @@ import {scene, renderer} from "../../three-setup/set-up";
 const CLAY_TEXTURE_URL = "https://i.ibb.co/9nk0c8H/terra-cotta-stucco-wall-texture.jpg";
 
 export let geometryArray = [];
+export let overwrites;
 
 export const OVERWRITE_SETTINGS = {
     productionWidth: {default: 2.5, min: 1., max: 10.},
@@ -27,8 +28,8 @@ export const OVERWRITE_SETTINGS = {
     totalHeight: {default: 260.0, min: 1.0, max: 10.},
     startHeight: {default: -100.0, min: 1.0, max: 10.},
     layerHeight: {default: 2.5, min: 1.0, max: 10.},
-    easingStart: {default: 50., min: 0., max: 250.},
-    easingEnd: {default: 50., min: 0., max: 250.},
+    easingStart: {default: 20., min: 0., max: 250.},
+    easingEnd: {default: 100., min: 0., max: 250.},
     pattern: {
         patternFunction: {default: sinWaveUVPattern},
         patternParameters: {default: DEFAULT_SIN_WAVE_UV_PARAMETERS}
@@ -36,20 +37,22 @@ export const OVERWRITE_SETTINGS = {
 }
 
 function overwriteClone() {
-    let overwriteCopy = {};
+    overwrites = {};
 
     for (const key in OVERWRITE_SETTINGS) {
         if (key !== "pattern") {
-            overwriteCopy[key] = OVERWRITE_SETTINGS[key].default;
+            overwrites[key] = OVERWRITE_SETTINGS[key].default;
         } else {
-            overwriteCopy["pattern"] = {
+            overwrites["pattern"] = {
                 patternFunction: OVERWRITE_SETTINGS.pattern.patternFunction.default,
                 patternParameters: patternClone()
             };
         }
     }
 
-    return overwriteCopy;
+    overwrites = updateEasingSettings();
+
+    return overwrites;
 }
 
 function patternClone() {
@@ -62,17 +65,7 @@ function patternClone() {
     return patternSettingsClone;
 }
 
-export let overwrites = overwriteClone();
-
-
-// export function patternMapping(patternName) {
-//     switch (patternName) {
-//         case "sinWave":
-//             return sinWaveUVPattern;
-//         default:
-//             return sinWaveUVPattern;
-//     }
-// }
+overwriteClone();
 
 function applyBrickShader(scene, pls, parameters) {
     const loader = new TextureLoader();
@@ -96,6 +89,9 @@ function applyBrickShader(scene, pls, parameters) {
                 const tubeGeo = new TubeGeometry(pl, pl.getPointCount(), pipeRadius, 6, true);
                 const locMesh = new Mesh(tubeGeo, brickShader);
 
+                locMesh.castShadow = true;
+                locMesh.receiveShadow = true;
+
                 geometryArray.push(locMesh);
 
                 scene.add(locMesh);
@@ -112,10 +108,37 @@ function applyBrickShader(scene, pls, parameters) {
     );
 }
 
-export function addLighting(scene) {
+export function addLighting() {
     const directionalLight = new DirectionalLight( 0xffffff, 1.1 );
     directionalLight.position.set(500,500,500);
-    scene.add( directionalLight );
+
+    directionalLight.castShadow = true;
+    directionalLight.shadow.camera.near = 1200;
+    directionalLight.shadow.camera.far = 2500;
+    directionalLight.shadow.bias = 0.0001;
+
+    directionalLight.shadow.mapSize.width = 4096;
+    directionalLight.shadow.mapSize.height = 4096;
+
+    return directionalLight;
+}
+
+function totalLength() {
+    return overwrites.baseWidth * Math.PI + (overwrites.baseLength - overwrites.baseWidth) * 2.;
+}
+
+export function updateEasingSettings() {
+    const locTotalLength = totalLength();
+
+    overwrites.easingParameters = {
+        startLength: overwrites.easingStart,
+        startMaxLength: overwrites.easingEnd,
+        endMaxLength: locTotalLength * .5 - overwrites.easingEnd,
+        endLength: locTotalLength * .5 - overwrites.easingStart,
+        easingDelta: 1. / (overwrites.easingEnd - overwrites.easingStart)
+    };
+
+    return overwrites;
 }
 
 export function clearScene(scene){
@@ -133,6 +156,10 @@ export function clearScene(scene){
 export function addBrick() {
 
     clearScene(scene);
+
+    updateEasingSettings();
+
+    console.log(overwrites);
 
     const pls = constructBrick(overwrites)
 
