@@ -212,12 +212,11 @@ export function innerProfile(v0, v1, p, height = 0.) {
 export function aSlice(v0, v1, p, height = 0.) {
     const outerClayCurve = outerProfile(p, height);
 
-    // console.log(outerClayCurve);
-
-    // need to apply a certain pattern logic to it
-    // no pattern for now!
-
-    outerClayCurve.applyPattern(p.pattern.patternFunction, p.pattern.patternParameters);
+    outerClayCurve.applyPattern(
+        p.pattern.patternFunction,
+        p.pattern.patternParameters,
+        p.easingParameters
+    );
 
     const outerGeom = outerClayCurve.toPolygon();
 
@@ -265,7 +264,6 @@ function aPinOnlySlice(v0, v1, p, height) {
 
     return pls;
 }
-
 
 export function constructBrick(p) {
     const v0 = new Vector3(-p.pinSpacing * .5, 0.0);
