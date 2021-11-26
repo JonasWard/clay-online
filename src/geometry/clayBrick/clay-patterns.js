@@ -120,7 +120,7 @@ export function cylinderUVFunction(uv, parameters) {
 export const DEFAULT_SIN_WAVE_UV_PARAMETERS = {
     amplitude: {default: 2., min: 0., max: 10.},
     period: {default: 30., min: 10., max: 500.},
-    phaseDelta: {default: 1., min: -10., max: 10.},
+    phaseDelta: {default: .1, min: -10., max: 10.},
     offset: {default: 0., min: -10., max: 10.},
     uv: {default: 1, min: 0, max: 1}
 };
