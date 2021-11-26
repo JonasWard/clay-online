@@ -31,7 +31,7 @@ function vectorFromCoordinate(coordinate) {
     );
 }
 
-function linearRingToPolyline(linearRing) {
+export function linearRingToPolyline(linearRing) {
     let vectors = [];
 
     for (const coordinate of linearRing.getCoordinates()) {
