@@ -260,14 +260,7 @@ export class Polyline extends Curve {
                 binormals[ i ].crossVectors( tangents[ i ], normals[ i ] );
 
             }
-
         }
-
-        // console.log({
-        //     tangents: tangents,
-        //     normals: normals,
-        //     binormals: binormals
-        // });
 
         return {
             tangents: tangents,
