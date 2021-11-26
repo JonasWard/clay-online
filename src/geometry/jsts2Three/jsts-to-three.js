@@ -1,15 +1,12 @@
 import {GeometryFactory} from "jsts/org/locationtech/jts/geom";
 import {Path, Vector3} from "three";
 import {Polyline} from "../three/three-poly-line";
-import {testPolygon} from "../importing-jsts";
 
 const llr = new GeometryFactory().createLinearRing();
 
 function getLinearRings(polygon) {
     let linearRings = [];
     linearRings.push(polygon.getExteriorRing());
-
-    // console.log(polygon);
 
     for (let i = 0; i < polygon.getNumInteriorRing(); i++) {
         linearRings.push(polygon.getInteriorRingN(i));
@@ -46,24 +43,29 @@ function linearRingToPolyline(linearRing) {
     return new Polyline(vectors);
 }
 
-export function polygonToPolylines(polygon){
-    let polylines = [];
+export function deconstructPolygon(polygon) {
+    let linearRings = [];
 
     if (polygon.constructor.name === "MultiPolygon") {
         for (const pg of polygon._geometries) {
-            for (const pl of polygonToPolylines(pg)){
-                polylines.push(pl);
-            }
+            const llrs = deconstructPolygon(pg);
+            linearRings = linearRings.concat(llrs);
         }
 
-        return polylines;
+        return linearRings;
     }
 
-    const lrs = getLinearRings(polygon);
+    const llrs = getLinearRings(polygon);
+    linearRings = linearRings.concat(llrs);
+    return linearRings;
+}
 
-    for (const lr of lrs){
-        polylines.push(linearRingToPolyline(lr));
+export function polygonToPolyLines(polygon){
+    let polyLines = [];
+
+    for (const lr of deconstructPolygon(polygon)) {
+        polyLines.push(linearRingToPolyline(lr));
     }
 
-    return polylines;
+    return polyLines;
 }
