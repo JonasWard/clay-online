@@ -7,11 +7,11 @@ import {Polyline} from "../three/three-poly-line";
 import {ClayPoint} from "./clay-point";
 import {polylineToPolygon} from "../jsts2Three/three-to-jsts";
 import {createBuffer, geometriesDifference, geometriesIntersection, geometryUnion} from "../jstsOperations/importing-jsts";
-import {deconstructPolygon, polygonToPolyLines} from "../jsts2Three/jsts-to-three";
+import {deconstructPolygon, linearRingToPolyline, polygonToPolyLines} from "../jsts2Three/jsts-to-three";
 import {Vector2, Vector3} from "three";
 import {twistIntersect} from "../jstsOperations/deconstruct-polygon";
 
-function pinRadiusAtHeight(p, height) {
+function pinDiameterAtHeight(p, height) {
     return p.pinDiameterDelta * height + p.pinDiameter0;
 }
 
@@ -166,7 +166,7 @@ function rectangle(bPoint, width, height) {
     ]);
 }
 
-export function innerProfileGeom(v0, v1, p, height = 0.) {
+export function innerProfileGeom(v0, v1, p, height = 0., pinR = 10.) {
 
     const diamondVs = simpleLineDivison(v0, v1, p.diamondCount + 1, false);
 
@@ -180,10 +180,8 @@ export function innerProfileGeom(v0, v1, p, height = 0.) {
         pls.push(diamondRect);
     }
 
-    const pinDiameter = pinRadiusAtHeight(p, height);
-
-    pls.push(simpleArcDivision(v0, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions));
-    pls.push(simpleArcDivision(v1, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions));
+    pls.push(simpleArcDivision(v0, pinR, 2. * Math.PI, 0., p.pinDivisions));
+    pls.push(simpleArcDivision(v1, pinR, 2. * Math.PI, 0., p.pinDivisions));
     pls.push(rectangle(v0, p.productionWidth, p.baseWidth * p.lengthBufferMultiplier));
     pls.push(rectangle(v1, p.productionWidth, p.baseWidth * p.lengthBufferMultiplier));
     pls.push(rectangle(new Vector3(0, 0, 0),p.baseLength + p.baseWidth * (p.lengthBufferMultiplier - 1.), p.productionWidth));
@@ -198,8 +196,8 @@ export function innerProfileGeom(v0, v1, p, height = 0.) {
     return geom;
 }
 
-export function innerProfile(v0, v1, p, height = 0.) {
-    const geom = innerProfileGeom(v0, v1, p, height);
+export function innerProfile(v0, v1, p, height = 0., pinR = 10.) {
+    const geom = innerProfileGeom(v0, v1, p, height, pinR);
 
     const polylines = polygonToPolyLines(geom);
 
@@ -208,6 +206,41 @@ export function innerProfile(v0, v1, p, height = 0.) {
     }
 
     return polylines;
+}
+
+function generateCrossPinA(v0, pinR, p) {
+    const spacing = pinR + p.productionWidth * 2.;
+
+    return [
+        {
+            coordinate: {
+                x: v0.x - spacing,
+                y: v0.y
+            },
+            direction: "right"
+        },
+        // {
+        //     coordinate: {
+        //         x: v0.x,
+        //         y: v0.y + spacing
+        //     },
+        //     direction: "small"
+        // },
+        {
+            coordinate: {
+                x: v0.x + spacing,
+                y: v0.y
+            },
+            direction: "right"
+        },
+        // {
+        //     coordinate: {
+        //         x: v0.x,
+        //         y: v0.y - spacing
+        //     },
+        //     direction: "small"
+        // }
+    ]
 }
 
 export function aSlice(v0, v1, p, height = 0.) {
@@ -234,14 +267,45 @@ export function aSlice(v0, v1, p, height = 0.) {
     const leftRecPg = polylineToPolygon(leftRec);
     const unionOuterGeom = geometryUnion([bufferedOuterGeom, leftRecPg])
 
-    const innerGeom = innerProfileGeom(v0, v1, p, height);
+    const pinR = pinDiameterAtHeight(p, height) * .5;
+
+    const innerGeom = innerProfileGeom(v0, v1, p, height, pinR);
 
     const geom = geometriesIntersection(unionOuterGeom, innerGeom);
 
     const path = geometriesDifference(outerGeom, geom)
 
-    twistIntersect(path, null, p);
-    const polyLines = polygonToPolyLines(path);
+    // hardcoded coord list
+
+    // const coordDirection = [
+    //     {
+    //         coordinate: {
+    //             x: -140.,
+    //             y: 0.
+    //         },
+    //         direction: "large"
+    //     },
+    //     // {
+    //     //     coordinate: {
+    //     //         x: 140.,
+    //     //         y: 0.
+    //     //     },
+    //     //     direction: "small"
+    //     // }
+    // ]
+
+    const coordDirection = generateCrossPinA(v0, pinR, p);
+
+    const lineStrings = twistIntersect(path, coordDirection, p);
+
+    // console.log(lineString);
+
+    const polyLines = [];
+
+    for (const lr of lineStrings) {
+        polyLines.push(linearRingToPolyline(lr));
+    }
+    // const polyLines = polygonToPolyLines(path);
 
     return polyLines;
 }
@@ -249,7 +313,7 @@ export function aSlice(v0, v1, p, height = 0.) {
 function aPinOnlySlice(v0, v1, p, height) {
     let pls = [];
 
-    const pinDiameter = pinRadiusAtHeight(p, height);
+    const pinDiameter = pinDiameterAtHeight(p, height);
 
     const arcA = simpleArcDivision(v0, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions);
     const arcB = simpleArcDivision(v1, pinDiameter * .5, 2. * Math.PI, 0., p.pinDivisions);
