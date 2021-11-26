@@ -6,9 +6,10 @@ import {ClayPatternCurve} from "./clay-pattern-curve";
 import {Polyline} from "../three/three-poly-line";
 import {ClayPoint} from "./clay-point";
 import {polylineToPolygon} from "../jsts2Three/three-to-jsts";
-import {createBuffer, geometriesDifference, geometriesIntersection, geometryUnion} from "../importing-jsts";
-import {polygonToPolylines} from "../jsts2Three/jsts-to-three";
+import {createBuffer, geometriesDifference, geometriesIntersection, geometryUnion} from "../jstsOperations/importing-jsts";
+import {deconstructPolygon, polygonToPolyLines} from "../jsts2Three/jsts-to-three";
 import {Vector2, Vector3} from "three";
+import {twistIntersect} from "../jstsOperations/deconstruct-polygon";
 
 function pinRadiusAtHeight(p, height) {
     return p.pinDiameterDelta * height + p.pinDiameter0;
@@ -200,7 +201,7 @@ export function innerProfileGeom(v0, v1, p, height = 0.) {
 export function innerProfile(v0, v1, p, height = 0.) {
     const geom = innerProfileGeom(v0, v1, p, height);
 
-    const polylines = polygonToPolylines(geom);
+    const polylines = polygonToPolyLines(geom);
 
     for (const pl of polylines) {
         pl.moveToHeight(height);
@@ -224,15 +225,11 @@ export function aSlice(v0, v1, p, height = 0.) {
 
     const recL = (p.baseLength + p.baseWidth * (p.lengthBufferMultiplier - 1.)) * .5;
 
-    // console.log(recL);
-
     const leftRec = rectangle(
         new Vector3(-recL * .5, 0, 0),
         recL,
         p.productionWidth
     );
-
-    // console.log(leftRec);
 
     const leftRecPg = polylineToPolygon(leftRec);
     const unionOuterGeom = geometryUnion([bufferedOuterGeom, leftRecPg])
@@ -243,9 +240,10 @@ export function aSlice(v0, v1, p, height = 0.) {
 
     const path = geometriesDifference(outerGeom, geom)
 
-    let polylines = polygonToPolylines(path);
+    twistIntersect(path, null, p);
+    const polyLines = polygonToPolyLines(path);
 
-    return polylines;
+    return polyLines;
 }
 
 function aPinOnlySlice(v0, v1, p, height) {

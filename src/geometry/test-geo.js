@@ -12,10 +12,10 @@ import {
 } from "three";
 import {SpecialTubeGeo, TubeGeo} from "./to-three";
 import {shaders} from "./shaders-materials";
-import {displayPointTest, testPolygon} from "./importing-jsts";
+import {displayPointTest, testPolygon} from "./jstsOperations/importing-jsts";
 import {clayPointTest} from "./clayBrick/clay-point";
 import {testClayCurve} from "./clayBrick/clay-pattern-curve";
-import {polygonToPolylines} from "./jsts2Three/jsts-to-three";
+import {polygonToPolyLines} from "./jsts2Three/jsts-to-three";
 import {aSlice, constructBrick, innerProfile, outerProfile} from "./clayBrick/clay-simple-base";
 import {CustomSinCurve} from "./three/three-poly-line";
 
@@ -59,7 +59,7 @@ export function testJSTSTriangulation(scene) {
 
 export function geoTubeTest() {
     const polygon = testPolygon();
-    const pls = polygonToPolylines(polygon);
+    const pls = polygonToPolyLines(polygon);
 
     const blWhiteShader = new ShaderMaterial(shaders.normalShader);
 

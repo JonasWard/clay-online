@@ -3,7 +3,7 @@ import {getPerspectiveRenderer, resize} from "./renderers";
 import {getOrbitControls} from "./orbit-controls";
 import {getPerspectiveCamera} from "./cameras";
 import {start, stop} from "./render-loops";
-import {displayPointTest} from "../geometry/importing-jsts";
+import {displayPointTest} from "../geometry/jstsOperations/importing-jsts";
 import {addBrick, addLighting} from "../geometry/three/brick-to-scene";
 
 export let scene;

@@ -4,7 +4,7 @@ import BufferOp from "jsts/org/locationtech/jts/operation/buffer/BufferOp";
 import {Geometry, GeometryCollection, GeometryFactory} from "jsts/org/locationtech/jts/geom";
 import "jsts/org/locationtech/jts/monkey.js";
 import {BufferAttribute, BufferGeometry, LineCurve, Vector3} from "three";
-import {CustomLine} from "./test-geo";
+import {CustomLine} from "../test-geo";
 import {UnaryUnionOp} from "jsts/org/locationtech/jts/operation/union";
 
 function triangulationFromPolygon(polygon) {
