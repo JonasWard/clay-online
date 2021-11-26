@@ -16,7 +16,6 @@ export function createGUI(scene) {
         const localPatternGUI = gui.addFolder(patternName);
 
         for (const patternParameter in PATTERN_LIST[patternName].patternParameters) {
-            console.log(patternParameter);
 
             addPatternOverwrites(localPatternGUI, patternParameter, patternName);
         }
@@ -48,8 +47,6 @@ function addAllOverwrites(guiElement, overwriteElement) {
 function addPatternOverwrites(guiElement, overwritePatternElement, patternName) {
 
     const patternParameters = PATTERN_LIST[patternName].patternParameters;
-
-    console.log(patternName);
 
     overwrites.pattern.patternParameters[overwritePatternElement] = patternParameters[overwritePatternElement].default;
 
