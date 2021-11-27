@@ -8,14 +8,11 @@ import {LineMerger} from "jsts/org/locationtech/jts/operation/linemerge";
 
 const geoFactory = new GeometryFactory();
 
-function twistLineStringAroundPoint(lineString, coordinate = null, radius) {
+function splitLineStringWithPoint(lineString, coordinate = null, radius) {
     const circle = creatCircle(coordinate.x, coordinate.y, 3.);
 
-    console.log("twisting LineString");
-    console.log(lineString);
     let mls = lineString.difference(circle);
 
-    console.log(mls);
     let lrs = joinLineStrings(mls);
 
     return lrs;
@@ -46,72 +43,77 @@ function reverseAJoinB(linestringA, linestringB) {
 }
 
 function getEnvelopes(lrA, lrB) {
-    // console.log(lrA.getEnvelopeInternal());
-
     return {
         bboxA: lrA.getEnvelopeInternal(),
         bboxB: lrB.getEnvelopeInternal()
     }
 }
 
-function reverseSmaller(lrA, lrB) {
-    const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
+const switchingFunctionMap = {
+    top: checkTop,
+    bottom: checkBottom,
+    left: checkLeft,
+    right: checkRight,
+    small: checkSmaller,
+    large: checkLarger
+}
 
-    if (bboxA.getArea() < bboxB.getArea()) {
-        return reverseAJoinB(lrA, lrB);
+function sameOrder(lrA, lrB) {
+    return {lrA: lrA, lrB: lrB};
+}
+
+function inverseOrder(lrA, lrB) {
+    return {lrA: lrB, lrB: lrA};
+}
+
+function checkFunction(functionName, lrA, lrB) {
+    if (switchingFunctionMap[functionName](lrA, lrB)) {
+        return sameOrder(lrA, lrB);
     } else {
-        return reverseAJoinB(lrB, lrA);
+        return inverseOrder(lrA, lrB);
     }
 }
 
-function reverseLarger(lrA, lrB) {
-    const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
-
-    if (bboxA.getArea() > bboxB.getArea()) {
-        return reverseAJoinB(lrA, lrB);
-    } else {
-        return reverseAJoinB(lrB, lrA);
+function sortGeometries(functionName, lrs){
+    function sortForThis(lrA, lrB) {
+        if (switchingFunctionMap[functionName](lrA, lrB)) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
+    lrs.sort(sortForThis);
+    return lrs;
 }
 
-function reverseLeft(lrA, lrB) {
+function checkSmaller(lrA, lrB) {
     const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
-
-    if (bboxA.getMaxX() < bboxB.getMinX()) {
-        return reverseAJoinB(lrA, lrB);
-    } else {
-        return reverseAJoinB(lrB, lrA);
-    }
+    return bboxA.getArea() < bboxB.getArea();
 }
 
-function reverseRight(lrA, lrB) {
+function checkLarger(lrA, lrB) {
     const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
-
-    if (bboxB.getMaxX() < bboxA.getMinX()) {
-        return reverseAJoinB(lrA, lrB);
-    } else {
-        return reverseAJoinB(lrB, lrA);
-    }
+    return bboxA.getArea() > bboxB.getArea();
 }
 
-function reverseTop(lrA, lrB) {
+function checkLeft(lrA, lrB) {
     const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
-
-    if (bboxA.getMaxY() < bboxB.getMinY()) {
-        return reverseAJoinB(lrA, lrB);
-    } else {
-        return reverseAJoinB(lrB, lrA);
-    }
+    return bboxA.getMaxX() < bboxB.getMinX();
 }
 
-function reverseBottom(lrA, lrB) {
+function checkRight(lrA, lrB) {
     const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
+    return bboxB.getMaxX() < bboxA.getMinX();
+}
 
-    if (bboxB.getMaxY() < bboxA.getMinY()) {
-        return reverseAJoinB(lrA, lrB);
-    } else {
-        return reverseAJoinB(lrB, lrA);
-    }
+function checkTop(lrA, lrB) {
+    const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
+    return bboxA.getMaxY() < bboxB.getMinY();
+}
+
+function checkBottom(lrA, lrB) {
+    const {bboxA, bboxB} = getEnvelopes(lrA, lrB);
+    return bboxB.getMaxY() < bboxA.getMinY();
 }
 
 function deconstructMultiLineString(mls) {
@@ -124,14 +126,9 @@ function deconstructMultiLineString(mls) {
 }
 
 function mergeTouchingLineStrings(lrA, lrB) {
-    // console.log(lrA.getNumPoints());
-    // console.log(lrB.getNumPoints());
-
     let coords = lrA.getCoordinates();
     coords.pop();
     coords = coords.concat(lrB.getCoordinates());
-
-    // console.log(coords.length);
 
     return geoFactory.createLineString(coords);
 }
@@ -168,16 +165,170 @@ function joinLineStrings(mls) {
     return joinedLrs;
 }
 
-const switchingFunctionMap = {
-    top: reverseTop,
-    bottom: reverseBottom,
-    left: reverseLeft,
-    right: reverseRight,
-    small: reverseSmaller,
-    large: reverseLarger
+function concatenateLineStrings(lrs){
+    let coords = [];
+
+    for (const lr of lrs){
+        coords = coords.concat(lr.getCoordinates());
+    }
+
+    coords.push(coords[0]);
+    return geoFactory.createLinearRing(coords);
 }
 
-export function twistIntersect(polygon, coordDirections = [], p = null) {
+function hardcodedTweaking(polygon, coords, radius){
+    let resultLrs = [];
+    let intermediateLrs;
+    let activeLr;
+
+    intermediateLrs = splitLineStringWithPoint(polygon, coords.a.v0, radius)
+    if (intermediateLrs.length === 2) {
+        let lr0 = intermediateLrs[0];
+        let lr1 = intermediateLrs[1];
+
+        let {lrA, lrB} = checkFunction("large", lr0, lr1);
+
+        resultLrs.push(lrA);
+
+        lrB = lrB.reverse();
+        activeLr = lrB;
+    }
+
+    intermediateLrs = splitLineStringWithPoint(activeLr, coords.a.v1, radius)
+    if (intermediateLrs.length === 3) {
+        intermediateLrs = sortGeometries("small", intermediateLrs);
+        let lr0 = intermediateLrs[1];
+        let lr1 = intermediateLrs[2];
+
+        let {lrA, lrB} = checkFunction("bottom", lr0, lr1);
+
+        resultLrs.push(lrB);
+        lrA = lrA.reverse()
+        resultLrs.push(lrA);
+
+        activeLr = intermediateLrs[0];
+    }
+
+    intermediateLrs = splitLineStringWithPoint(activeLr, coords.a.v2, radius)
+    if (intermediateLrs.length === 3) {
+        intermediateLrs = sortGeometries("large", intermediateLrs);
+        let lr0 = intermediateLrs[0];
+        let lr1 = intermediateLrs[1];
+
+        let {lrA, lrB} = checkFunction("bottom", lr0, lr1);
+        resultLrs.push(lrA);
+
+        let subIntermediate = splitLineStringWithPoint(lrB, coords.a.v3, radius);
+        if (subIntermediate.length === 3) {
+            subIntermediate = sortGeometries("bottom", subIntermediate);
+            let lr0 = subIntermediate[2];
+            let lr1 = subIntermediate[1];
+
+            const output = checkFunction("left", lr0, lr1);
+
+            resultLrs = [
+                output.lrB,
+                subIntermediate[0].reverse(),
+                output.lrA
+            ].concat(resultLrs);
+        }
+
+        activeLr = intermediateLrs[2].reverse();
+    }
+
+    console.log(coords.d);
+    let count = 0;
+
+    for (const diamondC of coords.d) {
+        intermediateLrs = splitLineStringWithPoint(activeLr,diamondC, radius);
+
+        if (intermediateLrs.length === 3) {
+            intermediateLrs = sortGeometries("right", intermediateLrs);
+
+            let lr0 = intermediateLrs[0];
+            let lr1 = intermediateLrs[1];
+
+            let locFunctionName;
+            if (count % 2 === 0) {
+                locFunctionName = "bottom";
+            } else {
+                locFunctionName = "top";
+            }
+            let {lrA, lrB} = checkFunction(locFunctionName, lr0, lr1);
+
+            resultLrs = [lrA].concat(resultLrs);
+            resultLrs.push(lrB);
+
+            activeLr = intermediateLrs[2].reverse();
+        }
+        count++;
+    }
+
+    intermediateLrs = splitLineStringWithPoint(activeLr, coords.b.v0, radius)
+    if (intermediateLrs.length === 3) {
+        intermediateLrs = sortGeometries("right", intermediateLrs);
+
+        let lr0 = intermediateLrs[0];
+        let lr1 = intermediateLrs[1];
+
+        let {lrA, lrB} = checkFunction("bottom", lr0, lr1);
+
+        resultLrs = [lrA].concat(resultLrs);
+        resultLrs.push(lrB);
+
+        activeLr = intermediateLrs[2].reverse();
+    }
+
+    intermediateLrs = splitLineStringWithPoint(activeLr, coords.b.v2, radius)
+    if (intermediateLrs.length === 3) {
+        intermediateLrs = sortGeometries("left", intermediateLrs);
+        let lr0 = intermediateLrs[1];
+        let lr1 = intermediateLrs[2];
+
+        let localResults = [];
+
+        let {lrA, lrB} = checkFunction("bottom", lr0, lr1);
+
+        let subIntermediate = splitLineStringWithPoint(lrA, coords.b.v1, radius);
+        if (subIntermediate.length === 3) {
+            subIntermediate = sortGeometries("top", subIntermediate);
+            let lr0 = subIntermediate[2];
+            let lr1 = subIntermediate[1];
+
+            const output = checkFunction("left", lr0, lr1);
+
+            localResults = [
+                output.lrA,
+                subIntermediate[0].reverse(),
+                output.lrB
+            ];
+        }
+
+        localResults.push(intermediateLrs[0].reverse());
+
+        subIntermediate = splitLineStringWithPoint(lrB, coords.b.v3, radius);
+        if (subIntermediate.length === 3) {
+            subIntermediate = sortGeometries("bottom", subIntermediate);
+            let lr0 = subIntermediate[2];
+            let lr1 = subIntermediate[1];
+
+            const output = checkFunction("right", lr0, lr1);
+
+            localResults = localResults.concat([
+                output.lrA,
+                subIntermediate[0].reverse(),
+                output.lrB
+            ]);
+        }
+
+        resultLrs = resultLrs.concat(localResults);
+
+    }
+
+    return concatenateLineStrings(resultLrs);
+}
+
+export function twistIntersect(polygon, coords = [], p = null) {
     const linearRings = deconstructPolygon(polygon);
 
     const radius = (p.productionWidth * .5) * 1.415;
@@ -185,27 +336,8 @@ export function twistIntersect(polygon, coordDirections = [], p = null) {
 
     if (linearRings.length === 1) {
         let activeLR = linearRings[0];
-        for (const coordDirection of coordDirections) {
-            const lrs = twistLineStringAroundPoint(
-                activeLR,
-                coordDirection.coordinate,
-                radius
-            );
 
-            if (lrs.length === 2) {
-                console.log("can apply coordinate difference");
-                const lrA = lrs[0];
-                const lrB = lrs[1];
-
-                activeLR = switchingFunctionMap[coordDirection.direction](lrA, lrB);
-
-            } else {
-                console.log("resulting lineString count is " + lrs.length);
-                return lrs;
-            }
-        }
-
-        return [activeLR];
+        return [hardcodedTweaking(activeLR, coords)];
 
     } else {
         console.log("this slice contains more than one more line string");
