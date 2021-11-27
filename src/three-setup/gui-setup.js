@@ -8,6 +8,7 @@ import {
     updateEasingSettings
 } from "../geometry/three/brick-to-scene";
 import {PATTERN_LIST} from "../geometry/clayBrick/clay-patterns";
+import {outputCSV} from "../geometry/io/export-to-csv";
 
 export function createGUI(scene) {
     const gui = new GUI({ autoPlace: true, width: 150 });
@@ -28,6 +29,20 @@ export function createGUI(scene) {
             addAllOverwrites(defaultParameters, overwriteName);
         }
     }
+
+    let obj = { download:function(){ addCSVOutput() }};
+
+    gui.add(obj, "download");
+}
+
+function addCSVOutput() {
+    let encodedUri = encodeURI(outputCSV());
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "my_data.csv");
+    document.body.appendChild(link); // Required for FF
+
+    link.click(); // This will download the data file named "my_data.csv".
 }
 
 function addAllOverwrites(guiElement, overwriteElement) {
