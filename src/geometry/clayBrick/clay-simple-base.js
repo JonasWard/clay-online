@@ -214,7 +214,7 @@ export function innerProfile(v0, v1, p, height = 0., pinR = 10.) {
 }
 
 function generateCrossPin(v, pinR, p) {
-    const spacing = pinR + p.productionWidth * 2.;
+    const spacing = pinR + p.productionWidth * .5;
 
     return {
         v0: {

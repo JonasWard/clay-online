@@ -9,7 +9,7 @@ import {LineMerger} from "jsts/org/locationtech/jts/operation/linemerge";
 const geoFactory = new GeometryFactory();
 
 function splitLineStringWithPoint(lineString, coordinate = null, radius) {
-    const circle = creatCircle(coordinate.x, coordinate.y, 3.);
+    const circle = creatCircle(coordinate.x, coordinate.y, radius);
 
     let mls = lineString.difference(circle);
 
@@ -348,7 +348,7 @@ export function twistIntersect(polygon, coords = [], p = null) {
     if (linearRings.length === 1) {
         let activeLR = linearRings[0];
 
-        return [hardcodedTweaking(activeLR, coords)];
+        return [hardcodedTweaking(activeLR, coords, radius)];
 
     } else {
         // console.log("this slice contains more than one more line string");
