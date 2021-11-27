@@ -236,7 +236,6 @@ function hardcodedTweaking(polygon, coords, radius){
         activeLr = intermediateLrs[2].reverse();
     }
 
-    console.log(coords.d);
     let count = 0;
 
     for (const diamondC of coords.d) {
@@ -345,7 +344,6 @@ export function twistIntersect(polygon, coords = [], p = null) {
     const linearRings = deconstructPolygon(polygon);
 
     const radius = (p.productionWidth * .5) * 1.415;
-    console.log(radius);
 
     if (linearRings.length === 1) {
         let activeLR = linearRings[0];
@@ -353,7 +351,7 @@ export function twistIntersect(polygon, coords = [], p = null) {
         return [hardcodedTweaking(activeLR, coords)];
 
     } else {
-        console.log("this slice contains more than one more line string");
+        // console.log("this slice contains more than one more line string");
         return null;
     }
 }
