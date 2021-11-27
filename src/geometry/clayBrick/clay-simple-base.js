@@ -270,7 +270,6 @@ export function aSlice(v0, v1, p, height = 0.) {
 
     let diamondCrosses = simpleLineDivison(v0, v1, p.diamondCount + 1, false, .5);
 
-    console.log(diamondCrosses);
     diamondCrosses.pop();
     // diamondCrosses = diamondCrosses.reverse();
 
@@ -282,13 +281,17 @@ export function aSlice(v0, v1, p, height = 0.) {
 
     const lineStrings = twistIntersect(path, coords, p);
 
-    const polyLines = [];
+    let polyLines = [];
+    let coordinateLists = [];
 
     for (const lr of lineStrings) {
         polyLines.push(linearRingToPolyline(lr));
+        for (const coordinate of lr.getCoordinates()) {
+            coordinateLists.push([coordinate.x, coordinate.y, height])
+        }
     }
 
-    return polyLines;
+    return {polyLines: polyLines, coordinateLists: coordinateLists};
 }
 
 function aPinOnlySlice(v0, v1, p, height) {
@@ -316,10 +319,14 @@ export function constructBrick(p) {
 
     let polylines = [];
 
+    let coordinatListss = []
+
     let localH = 0.;
     for (localH; localH < p.bodyHeight; localH += p.layerHeight) {
+        const {polyLines, coordinateLists} = aSlice(v0, v1, p, localH);
+        coordinatListss = coordinatListss.concat(coordinateLists);
+        for (const pl of polyLines) {
 
-        for (const pl of aSlice(v0, v1, p, localH)) {
             pl.moveToHeight(localH + p.startHeight);
             polylines.push(pl);
         }
@@ -331,6 +338,8 @@ export function constructBrick(p) {
             polylines.push(pl);
         }
     }
+
+    window.coordinates = coordinatListss;
 
     return polylines;
 }
