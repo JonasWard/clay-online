@@ -279,6 +279,10 @@ function hardcodedTweaking(polygon, coords, radius){
         activeLr = intermediateLrs[2].reverse();
     }
 
+    if (count % 2 === 1) {
+        activeLr = activeLr.reverse();
+    }
+
     intermediateLrs = splitLineStringWithPoint(activeLr, coords.b.v2, radius)
     if (intermediateLrs.length === 3) {
         intermediateLrs = sortGeometries("left", intermediateLrs);
@@ -319,6 +323,15 @@ function hardcodedTweaking(polygon, coords, radius){
                 subIntermediate[0].reverse(),
                 output.lrB
             ]);
+        }
+
+        if (count % 2 === 1) {
+            let flippedCurves = [];
+            localResults.reverse();
+            for (const lr of localResults){
+                flippedCurves.push(lr.reverse());
+            }
+            localResults = flippedCurves;
         }
 
         resultLrs = resultLrs.concat(localResults);
