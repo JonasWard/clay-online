@@ -103,7 +103,7 @@ export function outerProfile(p, height = 0.) {
     return clayPolyline;
 }
 
-function simpleLineDivison(v0, v1, divisions, withEnds = false) {
+function simpleLineDivison(v0, v1, divisions, withEnds = false, relativeShift = null) {
     const delta = new Vector3().addScaledVector(
         new Vector3().subVectors(v1, v0),
         1. / divisions
@@ -117,6 +117,11 @@ function simpleLineDivison(v0, v1, divisions, withEnds = false) {
     if (!withEnds) {
         start = 1;
         end = divisions;
+    }
+
+    if (!(relativeShift === null)) {
+        start += relativeShift;
+        end += relativeShift;
     }
 
     for (let i = start; i < end; i++) {
@@ -208,39 +213,27 @@ export function innerProfile(v0, v1, p, height = 0., pinR = 10.) {
     return polylines;
 }
 
-function generateCrossPinA(v0, pinR, p) {
+function generateCrossPin(v, pinR, p) {
     const spacing = pinR + p.productionWidth * 2.;
 
-    return [
-        {
-            coordinate: {
-                x: v0.x - spacing,
-                y: v0.y
-            },
-            direction: "right"
+    return {
+        v0: {
+            x: v.x - spacing,
+            y: v.y
         },
-        // {
-        //     coordinate: {
-        //         x: v0.x,
-        //         y: v0.y + spacing
-        //     },
-        //     direction: "small"
-        // },
-        {
-            coordinate: {
-                x: v0.x + spacing,
-                y: v0.y
-            },
-            direction: "right"
+        v1: {
+            x: v.x,
+            y: v.y + spacing
         },
-        // {
-        //     coordinate: {
-        //         x: v0.x,
-        //         y: v0.y - spacing
-        //     },
-        //     direction: "small"
-        // }
-    ]
+        v2: {
+            x: v.x + spacing,
+            y: v.y
+        },
+        v3: {
+            x: v.x,
+            y: v.y - spacing
+        }
+    }
 }
 
 export function aSlice(v0, v1, p, height = 0.) {
@@ -275,37 +268,25 @@ export function aSlice(v0, v1, p, height = 0.) {
 
     const path = geometriesDifference(outerGeom, geom)
 
-    // hardcoded coord list
+    let diamondCrosses = simpleLineDivison(v0, v1, p.diamondCount + 1, false, .5);
 
-    // const coordDirection = [
-    //     {
-    //         coordinate: {
-    //             x: -140.,
-    //             y: 0.
-    //         },
-    //         direction: "large"
-    //     },
-    //     // {
-    //     //     coordinate: {
-    //     //         x: 140.,
-    //     //         y: 0.
-    //     //     },
-    //     //     direction: "small"
-    //     // }
-    // ]
+    console.log(diamondCrosses);
+    diamondCrosses.pop();
+    // diamondCrosses = diamondCrosses.reverse();
 
-    const coordDirection = generateCrossPinA(v0, pinR, p);
+    const coords = {
+        a: generateCrossPin(v0, pinR, p),
+        b: generateCrossPin(v1, pinR, p),
+        d: diamondCrosses
+    }
 
-    const lineStrings = twistIntersect(path, coordDirection, p);
-
-    // console.log(lineString);
+    const lineStrings = twistIntersect(path, coords, p);
 
     const polyLines = [];
 
     for (const lr of lineStrings) {
         polyLines.push(linearRingToPolyline(lr));
     }
-    // const polyLines = polygonToPolyLines(path);
 
     return polyLines;
 }
