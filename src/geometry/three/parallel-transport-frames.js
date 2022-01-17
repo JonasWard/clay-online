@@ -122,9 +122,9 @@ export default class ParallelTransportPolyline {
         // console.log(this);
 
         for (let a = 0.; a < endAngle; a += angleDelta) {
-            const v3 = this.getPosition(index).clone().
-                add(this.normals[index].clone().multiplyScalar(this.radius * Math.cos(a)).
-                add(this.binormals[index].clone().multiplyScalar(this.radius * Math.sin(a))));
+            const v3 = this.getPosition(index).clone()
+                .add(this.normals[index].clone().multiplyScalar(this.radius * Math.cos(a))
+                .add(this.binormals[index].clone().multiplyScalar(this.radius * Math.sin(a))));
 
             positions.push([v3.x, v3.y, v3.z]);
 
@@ -145,21 +145,21 @@ export default class ParallelTransportPolyline {
 
             // console.log(i, iBis);
 
-            uvs = uvs.concat(previousLayer.uvs[i]);
-            uvs = uvs.concat(currentLayer.uvs[iBis]);
-            uvs = uvs.concat(previousLayer.uvs[iBis]);
+            uvs.push(...previousLayer.uvs[i]);
+            uvs.push(...currentLayer.uvs[iBis]);
+            uvs.push(...previousLayer.uvs[iBis]);
 
-            uvs = uvs.concat(previousLayer.uvs[i]);
-            uvs = uvs.concat(currentLayer.uvs[i]);
-            uvs = uvs.concat(currentLayer.uvs[iBis]);
+            uvs.push(...previousLayer.uvs[i]);
+            uvs.push(...currentLayer.uvs[i]);
+            uvs.push(...currentLayer.uvs[iBis]);
 
-            positions = positions.concat(previousLayer.positions[i]);
-            positions = positions.concat(currentLayer.positions[iBis]);
-            positions = positions.concat(previousLayer.positions[iBis]);
+            positions.push(...previousLayer.positions[i]);
+            positions.push(...currentLayer.positions[iBis]);
+            positions.push(...previousLayer.positions[iBis]);
 
-            positions = positions.concat(previousLayer.positions[i]);
-            positions = positions.concat(currentLayer.positions[i]);
-            positions = positions.concat(currentLayer.positions[iBis]);
+            positions.push(...previousLayer.positions[i]);
+            positions.push(...currentLayer.positions[i]);
+            positions.push(...currentLayer.positions[iBis]);
         }
 
         // console.log(positions, uvs);
@@ -180,7 +180,7 @@ export default class ParallelTransportPolyline {
             this.layers.push(this.constructLayer(i, endAngle, angleDelta, uvPairMultiplier));
             if (i > 0) {
                 this._distance += this.getPosition(i).distanceTo(this.getPosition(i-1));
-            };
+            }
         }
     }
 
@@ -204,15 +204,15 @@ export default class ParallelTransportPolyline {
             const previousLayer = this.layers[this.positionCount() - 1];
 
             const layerBufferData = this.concatenateBuffers(currentLayer, previousLayer, divisions);
-            positions = positions.concat(layerBufferData.positions);
-            uvs = uvs.concat(layerBufferData.uvs);
+            positions.push(...layerBufferData.positions);
+            uvs.push(...layerBufferData.uvs);
         } else {
             const currentLayer = this.layers[0];
             const previousLayer = this.layers[1];
 
             const layerBufferData = this.concatenateBuffers(currentLayer, previousLayer, divisions);
-            positions = positions.concat(layerBufferData.positions);
-            uvs = uvs.concat(layerBufferData.uvs);
+            positions.push(...layerBufferData.positions);
+            uvs.push(...layerBufferData.uvs);
         }
 
         for (let i = 1; i < this.positionCount(); i++) {
@@ -220,8 +220,8 @@ export default class ParallelTransportPolyline {
             const previousLayer = this.layers[i-1];
 
             const layerBufferData = this.concatenateBuffers(currentLayer, previousLayer, divisions);
-            positions = positions.concat(layerBufferData.positions);
-            uvs = uvs.concat(layerBufferData.uvs);
+            positions.push(...layerBufferData.positions);
+            uvs.push(...layerBufferData.uvs);
         }
 
         geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
