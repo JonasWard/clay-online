@@ -3,6 +3,7 @@ import {ClayPoint} from './clay-point';
 import {Vector3} from "three";
 import {Polyline} from "../three/three-poly-line";
 import {edgeUVConstraining} from "./clay-patterns";
+import ParallelTransportPolyline from "../three/parallel-transport-frames";
 
 export class ClayPatternCurve {
     clayPoints;
@@ -31,6 +32,10 @@ export class ClayPatternCurve {
         }
 
         return new Polyline(positions);
+    }
+
+    toParallelTransport() {
+        return new ParallelTransportPolyline(this.clayPoints.map(pt => pt.toVector3()));
     }
 
     moveToHeight(height = 0.) {

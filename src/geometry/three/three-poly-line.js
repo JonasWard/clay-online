@@ -1,5 +1,6 @@
-import {Curve, Matrix4, Vector3} from "three";
+import {BufferGeometry, Curve, Matrix4, Plane, Vector3} from "three";
 import {clamp} from "three/src/math/MathUtils";
+import ParallelTransportPolyline from "./parallel-transport-frames";
 
 export class CustomSinCurve extends Curve {
 
@@ -159,10 +160,13 @@ export class Polyline extends Curve {
 
     computeFrenetFrames( segments, closed ) {
 
+        console.log("compute Jonas Frenet Frames");
+
         // see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
 
         const normal = new Vector3();
 
+        const positions = [];
         const tangents = [];
         const normals = [];
         const binormals = [];
@@ -176,7 +180,8 @@ export class Polyline extends Curve {
 
             const u = i / segments;
 
-            tangents[ i ] = this.getTangentAt( u, new Vector3() );
+            positions[i] = this.getPointAt( u );
+            tangents[i] = this.getTangentAt( u );
 
         }
 
@@ -190,25 +195,7 @@ export class Polyline extends Curve {
         const ty = Math.abs( tangents[ 0 ].y );
         const tz = Math.abs( tangents[ 0 ].z );
 
-        if ( tx <= min ) {
-
-            min = tx;
-            normal.set( 1, 0, 0 );
-
-        }
-
-        if ( ty <= min ) {
-
-            min = ty;
-            normal.set( 0, 1, 0 );
-
-        }
-
-        if ( tz <= min ) {
-
-            normal.set( 0, 0, 1 );
-
-        }
+        normal.set( 0, 0, 1 );
 
         vec.crossVectors( tangents[ 0 ], normal ).normalize();
 
@@ -220,34 +207,25 @@ export class Polyline extends Curve {
 
         for ( let i = 1; i <= segments; i ++ ) {
 
-            normals[ i ] = normals[ i - 1 ].clone();
+            normals[ i ] = new Vector3().crossVectors( binormals[i-1], tangents[ i ] ).normalize();
 
-            binormals[ i ] = binormals[ i - 1 ].clone();
-
-            vec.crossVectors( tangents[ i - 1 ], tangents[ i ] );
-
-            if ( vec.length() > Number.EPSILON ) {
-
-                vec.normalize();
-
-                const theta = Math.acos( clamp( tangents[ i - 1 ].dot( tangents[ i ] ), - 1, 1 ) ); // clamp for floating pt errors
-
-                normals[ i ].applyMatrix4( mat.makeRotationAxis( vec, theta ) );
-
+            if (normals[i].dot(normals[i-1]) < 0) {
+                normals[i].negate();
+            } else if (normals[i].dot(normals[i-1]) === 0) {
+                if (normals[i].x !== normals[i-1].x) {
+                    normals[i].negate();
+                }
             }
 
-            binormals[ i ].crossVectors( tangents[ i ], normals[ i ] );
-
+            binormals[ i ] = new Vector3().crossVectors( tangents[ i ], normals[ i ] );
         }
-
-        // if the curve is closed, postprocess the vectors so the first and last normal vectors are the same
 
         if ( closed === true ) {
 
-            let theta = Math.acos( clamp( normals[ 0 ].dot( normals[ segments ] ), - 1, 1 ) );
+            let theta = Math.acos( clamp( normals[0].dot( normals[segments] ), - 1, 1 ) );
             theta /= segments;
 
-            if ( tangents[ 0 ].dot( vec.crossVectors( normals[ 0 ], normals[ segments ] ) ) > 0 ) {
+            if ( tangents[0].dot( vec.crossVectors( normals[0], normals[segments] ) ) > 0 ) {
 
                 theta = - theta;
 
@@ -256,11 +234,15 @@ export class Polyline extends Curve {
             for ( let i = 1; i <= segments; i ++ ) {
 
                 // twist a little...
-                normals[ i ].applyMatrix4( mat.makeRotationAxis( tangents[ i ], theta * i ) );
-                binormals[ i ].crossVectors( tangents[ i ], normals[ i ] );
+                normals[i].applyMatrix4( mat.makeRotationAxis( tangents[i], theta * i ) );
+                binormals[i].crossVectors( tangents[i], normals[i] );
 
             }
         }
+
+        console.log(tangents);
+        console.log(normals);
+        console.log(binormals);
 
         return {
             tangents: tangents,
@@ -268,6 +250,10 @@ export class Polyline extends Curve {
             binormals: binormals
         };
 
+    }
+
+    toParallelTransport() {
+        return new ParallelTransportPolyline(this.points);
     }
 
     _tConstraining(t) {
