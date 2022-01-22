@@ -151,5 +151,22 @@ export const shaders = {
             }`,
         transparent: true,
         extensions: {derivatives: true}
+    },
+    brownNormalShader: {
+        vertexShader: `
+            varying vec3 v_Normal;
+            void main() {
+                v_Normal = normal;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }`,
+        fragmentShader: `
+            varying vec3 v_Normal;
+            void main() {
+                gl_FragColor = vec4(v_Normal * .8, 1.);
+                // vec3 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+    
+            }`,
+        transparent: false,
+        uniforms: {}
     }
 }

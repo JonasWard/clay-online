@@ -15,23 +15,23 @@ export const OVERWRITE_SETTINGS = {
     baseWidth: {default: 150.0, min: 100., max: 200.},
     baseLength: {default: 300.0, min: 200., max: 400.},
     lengthBufferMultiplier: {default: 2.0, min: 1.0, max: 10.},
-    pinSpacing: {default: 220.0, min: 100., max: 300.},
+    pinSpacing: {default: 210.0, min: 100., max: 300.},
     diamondWidth: {default: 50.0, min: 20., max: 100.},
     diamondHeight: {default: 110.0, min: 20., max: 200.},
-    diamondCount: {default: 3, min: 1, max: 5},
-    pinDiameter0: {default: 40.0, min: 30., max: 100.},
-    pinDiameter1: {default: 20.0, min: 30., max: 100.},
+    diamondCount: {default: 5, min: 1, max: 5},
+    pinDiameter0: {default: 70.0, min: 30., max: 100.},
+    pinDiameter1: {default: 36.0, min: 30., max: 100.},
     pinDelta: {default: 250.0, min: 1.0, max: 10.},
     pinDivisions: {default: 60, min: 1.0, max: 10.},
     precision: {default: 2.0, min: 1.0, max: 10.},
-    bodyHeight: {default: 160.0, min: 1.0, max: 10.},
-    totalHeight: {default: 250.0, min: 1.0, max: 10.},
+    bodyHeight: {default: 150.0, min: 1.0, max: 10.},
+    totalHeight: {default: 260.0, min: 1.0, max: 10.},
     startHeight: {default: -100.0, min: 1.0, max: 10.},
     layerHeight: {default: 2.5, min: 1.0, max: 10.},
     easingStart: {default: 20., min: 0., max: 250.},
     easingEnd: {default: 100., min: 0., max: 250.},
     pattern: {
-        patternFunction: {default: sinWaveUVPattern},
+         patternFunction: {default: sinWaveUVPattern},
         patternParameters: {default: DEFAULT_SIN_WAVE_UV_PARAMETERS}
     }
 }
@@ -67,7 +67,23 @@ function patternClone() {
 
 overwriteClone();
 
-function applyBrickShader(scene, pls, parameters) {
+function applyCustomBrickShader(scene, pls, parameters, brickShader) {
+    const pipeRadius = parameters.layerHeight * .6;
+
+    for (const pl of pls) {
+        const tubeGeo = new TubeGeometry(pl, pl.getPointCount(), pipeRadius, 6, true);
+        const locMesh = new Mesh(tubeGeo, brickShader);
+
+        locMesh.castShadow = true;
+        locMesh.receiveShadow = true;
+
+        geometryArray.push(locMesh);
+
+        scene.add(locMesh);
+    }
+}
+
+function applyTextureBrickShader(scene, pls, parameters) {
     const loader = new TextureLoader();
 
     const pipeRadius = parameters.layerHeight * .6;
@@ -85,17 +101,7 @@ function applyBrickShader(scene, pls, parameters) {
 
             // const brickShader = shaderNormal();
 
-            for (const pl of pls) {
-                const tubeGeo = new TubeGeometry(pl, pl.getPointCount(), pipeRadius, 6, true);
-                const locMesh = new Mesh(tubeGeo, brickShader);
-
-                locMesh.castShadow = true;
-                locMesh.receiveShadow = true;
-
-                geometryArray.push(locMesh);
-
-                scene.add(locMesh);
-            }
+            applyCustomBrickShader(scene, pls, parameters, brickShader);
         },
 
         // onProgress callback currently not supported
@@ -161,7 +167,9 @@ export function addBrick() {
 
     console.log(overwrites);
 
-    const pls = constructBrick(overwrites)
+    const pls = constructBrick(overwrites);
 
-    applyBrickShader(scene, pls, overwrites);
+    const brickShader = shaderNormal();
+    applyCustomBrickShader(scene, pls, overwrites, brickShader);
+    // applyTextureBrickShader(scene, pls, overwrites);
 }

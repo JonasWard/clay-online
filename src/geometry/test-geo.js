@@ -20,11 +20,15 @@ import {aSlice, constructBrick, innerProfile, outerProfile} from "./clayBrick/cl
 import {CustomSinCurve} from "./three/three-poly-line";
 
 function shaderMaterialEdges() {
-    return new ShaderMaterial( shaders.grid );
+    return new ShaderMaterial(shaders.grid);
 }
 
 export function shaderNormal() {
     return new ShaderMaterial(shaders.normalShader);
+}
+
+export function shaderBrownNormal() {
+    return new ShaderMaterial(shaders.brownNormalShader);
 }
 
 export function testTube() {

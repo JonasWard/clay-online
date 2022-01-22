@@ -161,7 +161,7 @@ export class Polyline extends Curve {
 
         // see http://www.cs.indiana.edu/pub/techreports/TR425.pdf
 
-        const normal = new Vector3();
+        // const normal = new Vector3(0., 0., 1.);
 
         const tangents = [];
         const normals = [];
@@ -183,36 +183,36 @@ export class Polyline extends Curve {
         // select an initial normal vector perpendicular to the first tangent vector,
         // and in the direction of the minimum tangent xyz component
 
-        normals[ 0 ] = new Vector3();
+        normals[ 0 ] = new Vector3(0., 1., 0.);
         binormals[ 0 ] = new Vector3();
-        let min = Number.MAX_VALUE;
-        const tx = Math.abs( tangents[ 0 ].x );
-        const ty = Math.abs( tangents[ 0 ].y );
-        const tz = Math.abs( tangents[ 0 ].z );
+        // let min = Number.MAX_VALUE;
+        // const tx = Math.abs( tangents[ 0 ].x );
+        // const ty = Math.abs( tangents[ 0 ].y );
+        // const tz = Math.abs( tangents[ 0 ].z );
+        //
+        // if ( tx <= min ) {
+        //
+        //     min = tx;
+        //     normal.set( 1, 0, 0 );
+        //
+        // }
+        //
+        // if ( ty <= min ) {
+        //
+        //     min = ty;
+        //     normal.set( 0, 1, 0 );
+        //
+        // }
+        //
+        // if ( tz <= min ) {
+        //
+        //     normal.set( 0, 0, 1 );
+        //
+        // }
 
-        if ( tx <= min ) {
+        // vec.crossVectors( tangents[ 0 ], normal ).normalize();
 
-            min = tx;
-            normal.set( 1, 0, 0 );
-
-        }
-
-        if ( ty <= min ) {
-
-            min = ty;
-            normal.set( 0, 1, 0 );
-
-        }
-
-        if ( tz <= min ) {
-
-            normal.set( 0, 0, 1 );
-
-        }
-
-        vec.crossVectors( tangents[ 0 ], normal ).normalize();
-
-        normals[ 0 ].crossVectors( tangents[ 0 ], vec );
+        // normals[ 0 ].crossVectors( tangents[ 0 ], vec );
         binormals[ 0 ].crossVectors( tangents[ 0 ], normals[ 0 ] );
 
 
