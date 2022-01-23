@@ -1,22 +1,12 @@
 import {
-    Curve,
-    // EdgesGeometry,
-    // CurveLine,
-    // LineBasicMaterial,
-    // LineSegments,
-    Matrix4,
     Mesh,
-    ShaderMaterial,
-    // Vector2,
-    Vector3
+    ShaderMaterial
 } from "three";
-import {SpecialTubeGeo, TubeGeo} from "./to-three";
+import {TubeGeo} from "./to-three";
 import {shaders} from "./shaders-materials";
 import {displayPointTest, testPolygon} from "./jstsOperations/importing-jsts";
-import {clayPointTest} from "./clayBrick/clay-point";
-import {testClayCurve} from "./clayBrick/clay-pattern-curve";
 import {polygonToPolyLines} from "./jsts2Three/jsts-to-three";
-import {aSlice, constructBrick, innerProfile, outerProfile} from "./clayBrick/clay-simple-base";
+import {constructBrick} from "./clayBrick/clay-simple-base";
 import {CustomSinCurve} from "./three/three-poly-line";
 
 function shaderMaterialEdges() {

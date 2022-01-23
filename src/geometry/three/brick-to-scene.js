@@ -1,18 +1,13 @@
 import {constructBrick} from "../clayBrick/clay-simple-base";
-import {TubeGeo} from "../to-three";
-import {shaderNormal} from "../test-geo";
 import {DEFAULT_SIN_WAVE_UV_PARAMETERS, sinWaveUVPattern} from "../clayBrick/clay-patterns";
 import {
     MeshLambertMaterial,
     TextureLoader,
-    TubeGeometry,
     Mesh,
     DirectionalLight,
-    MeshBasicMaterial,
-    RepeatWrapping, DoubleSide
+    RepeatWrapping
 } from "three";
 import {scene, renderer} from "../../three-setup/set-up";
-import ParallelTransportPolyline from "./parallel-transport-frames";
 import {Vector2} from "three";
 
 const CLAY_TEXTURE_URL = "https://i.ibb.co/9nk0c8H/terra-cotta-stucco-wall-texture.jpg";
@@ -92,12 +87,10 @@ function applyBrickShader(scene, pls, parameters) {
             texture.wrapS = texture.wrapT = RepeatWrapping;
 
             // in this example we create the material when the texture is loaded
-            const brickShader = new MeshBasicMaterial( {
+            const brickShader = new MeshLambertMaterial( {
                 map: texture,
-                side: DoubleSide
+                receiveShadow: true
             } );
-
-            // const brickShader = shaderNormal();
 
             for (const pl of pls) {
                 console.log(pl);
@@ -107,7 +100,6 @@ function applyBrickShader(scene, pls, parameters) {
                 parallelTransport.update = true;
                 const tubeGeo = parallelTransport.constructBufferGeometry(8);
 
-                // const tubeGeo = new TubeGeometry(pl, pl.getPointCount(), pipeRadius, 6, true);
                 const locMesh = new Mesh(tubeGeo, brickShader);
 
                 locMesh.castShadow = true;

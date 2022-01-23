@@ -1,4 +1,4 @@
-import {BufferGeometry, Curve, Matrix4, Plane, Vector3} from "three";
+import {Curve, Matrix4, Vector3} from "three";
 import {clamp} from "three/src/math/MathUtils";
 import ParallelTransportPolyline from "./parallel-transport-frames";
 
@@ -205,9 +205,17 @@ export class Polyline extends Curve {
 
         // compute the slowly-varying normal and binormal vectors for each segment on the curve
 
+        let hasBeen0 = false;
+
         for ( let i = 1; i <= segments; i ++ ) {
 
-            normals[ i ] = new Vector3().crossVectors( binormals[i-1], tangents[ i ] ).normalize();
+            binormals[ i ] = new Vector3().crossVectors( normals[i-1], tangents[ i ] ).normalize();
+            if ( new Vector3().crossVectors( normals[i-1], tangents[ i ] ).length() < 0.1 ) {
+                if ( !hasBeen0 ) {
+                    console.log(normals[i-1], tangents[ i ], new Vector3().crossVectors( normals[i-1], tangents[ i ] ))
+                    hasBeen0 = true;
+                }
+            }
 
             if (normals[i].dot(normals[i-1]) < 0) {
                 normals[i].negate();
@@ -239,10 +247,6 @@ export class Polyline extends Curve {
 
             }
         }
-
-        console.log(tangents);
-        console.log(normals);
-        console.log(binormals);
 
         return {
             tangents: tangents,

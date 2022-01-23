@@ -109,34 +109,35 @@ export default class ParallelTransportPolyline {
         this.binormals = [new Vector3().crossVectors(this.getTangent(0), this.start)];
 
         for (let i = 1; i < this.positionCount(); i++) {
-            this.normals.push(this.binormals[i-1].clone().cross(this.getTangent(i)).normalize());
-            this.binormals.push(this.getTangent(i).clone().cross(this.normals[i]).normalize());
+            this.binormals.push(this.normals[i-1].clone().cross(this.getTangent(i)).normalize());
+            this.normals.push(this.getTangent(i).clone().cross(this.binormals[i]).normalize());
         }
     }
 
     constructLayer(index, endAngle, angleDelta, uvPairMultiplier) {
         let positions = [];
+        let normals = []
         let uvs = [];
 
-        // console.log(index, endAngle, angleDelta, uvPairMultiplier);
-        // console.log(this);
-
         for (let a = 0.; a < endAngle; a += angleDelta) {
-            const v3 = this.getPosition(index).clone()
-                .add(this.normals[index].clone().multiplyScalar(this.radius * Math.cos(a))
-                .add(this.binormals[index].clone().multiplyScalar(this.radius * Math.sin(a))));
+            const n3 = this.normals[index].clone().multiplyScalar(Math.cos(a))
+                .add(this.binormals[index].clone().multiplyScalar(Math.sin(a)));
 
+            const v3 = this.getPosition(index).clone().add(n3.clone().multiplyScalar(this.radius));
+
+            normals.push([n3.x, n3.y, n3.z]);
             positions.push([v3.x, v3.y, v3.z]);
 
             uvs.push([this._distance * uvPairMultiplier[0], a * uvPairMultiplier[1]]);
         }
 
-        return {positions: positions, uvs: uvs};
+        return {positions: positions, uvs: uvs, normals: normals};
     }
 
     concatenateBuffers(currentLayer, previousLayer, divisions) {
         let uvs = [];
         let positions = [];
+        let normals = [];
 
         // console.log(previousLayer, currentLayer);
 
@@ -146,25 +147,33 @@ export default class ParallelTransportPolyline {
             // console.log(i, iBis);
 
             uvs.push(...previousLayer.uvs[i]);
-            uvs.push(...currentLayer.uvs[iBis]);
             uvs.push(...previousLayer.uvs[iBis]);
+            uvs.push(...currentLayer.uvs[iBis]);
 
             uvs.push(...previousLayer.uvs[i]);
-            uvs.push(...currentLayer.uvs[i]);
             uvs.push(...currentLayer.uvs[iBis]);
+            uvs.push(...currentLayer.uvs[i]);
 
             positions.push(...previousLayer.positions[i]);
-            positions.push(...currentLayer.positions[iBis]);
             positions.push(...previousLayer.positions[iBis]);
+            positions.push(...currentLayer.positions[iBis]);
 
             positions.push(...previousLayer.positions[i]);
-            positions.push(...currentLayer.positions[i]);
             positions.push(...currentLayer.positions[iBis]);
+            positions.push(...currentLayer.positions[i]);
+
+            normals.push(...previousLayer.normals[i]);
+            normals.push(...previousLayer.normals[iBis]);
+            normals.push(...currentLayer.normals[iBis]);
+
+            normals.push(...previousLayer.normals[i]);
+            normals.push(...currentLayer.normals[iBis]);
+            normals.push(...currentLayer.normals[i]);
         }
 
         // console.log(positions, uvs);
 
-        return {positions: positions, uvs: uvs};
+        return {positions: positions, uvs: uvs, normals: normals};
     }
 
     _constructLayers(endAngle, angleDelta, uvPairMultiplier) {
@@ -191,6 +200,7 @@ export default class ParallelTransportPolyline {
 
         let positions = [];
         let uvs = [];
+        let normals = [];
 
         const endAngle = 2 * Math.PI;
         const angleDelta = endAngle / divisions;
@@ -206,6 +216,7 @@ export default class ParallelTransportPolyline {
             const layerBufferData = this.concatenateBuffers(currentLayer, previousLayer, divisions);
             positions.push(...layerBufferData.positions);
             uvs.push(...layerBufferData.uvs);
+            normals.push(...layerBufferData.normals);
         } else {
             const currentLayer = this.layers[0];
             const previousLayer = this.layers[1];
@@ -213,6 +224,7 @@ export default class ParallelTransportPolyline {
             const layerBufferData = this.concatenateBuffers(currentLayer, previousLayer, divisions);
             positions.push(...layerBufferData.positions);
             uvs.push(...layerBufferData.uvs);
+            normals.push(...layerBufferData.normals);
         }
 
         for (let i = 1; i < this.positionCount(); i++) {
@@ -222,10 +234,18 @@ export default class ParallelTransportPolyline {
             const layerBufferData = this.concatenateBuffers(currentLayer, previousLayer, divisions);
             positions.push(...layerBufferData.positions);
             uvs.push(...layerBufferData.uvs);
+            normals.push(...layerBufferData.normals);
         }
 
         geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
-        geometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
+        const uvBufferAtt = new BufferAttribute(new Float32Array(uvs), 2);
+        geometry.setAttribute('uv', uvBufferAtt);
+        geometry.setAttribute('uv2', uvBufferAtt);
+        geometry.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
+
+        if (this.positionCount() > 100) {
+            console.log(geometry);
+        }
 
         return geometry;
     }
